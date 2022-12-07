@@ -7,6 +7,7 @@
 #include "EnemyShot.h"
 #include "EnemyRevShot.h"
 #include "SceneBase.h"
+#include "DefenseLineEffect.h"
 
 class SceneMain : public SceneBase
 {
@@ -18,8 +19,9 @@ public:
 	const char* const kEnemyGraphic = "data/player.bmp";	// エネミーのグラフィック
 	const char* const kMobEnemiesGraphicFilename = "data/MobEnemies.png";	// モブエネミーのグラフィック
 	const char* const kPlayerShotGraphic = "data/PlayerShot.png";	// プレイヤーショットのグラフィック
+	const char* const kEnemyShotGraphic = "data/EnemyShot.png";	// プレイヤーショットのグラフィック
 	const char* const kEnemyRevShotGraphic = "data/EnemyShot.png";	// エネミーの回転ショットのグラフィック
-
+	const char* const kDefenseLineFilename = "data/Path.png";	// 防衛ラインのエフェクト
 
 	// 当たり判定の大きさ
 	static constexpr int kPlayerHitCircleSize = 4;	// プレイヤーの円形の当たり判定の大きさ
@@ -29,8 +31,18 @@ public:
 	static constexpr int kEnemyShotCircleSize = 5;	// エネミーショットの円形の当たり判定の大きさ
 	static constexpr int kGrazeCircleSize = 20;		// プレイヤーのグレイズの円形の当たり判定の大きさ
 
+	
+	
+	// 防衛ラインエフェクトアニメーションの速度
+	int kDefenseLineAnimeChangeFrame = 8;
+
 	// エネミーのHP
 	static constexpr int kEnemyHP = 5;
+
+	// 最大数
+	static constexpr int kObjectMax = 128;
+
+	
 public:
 	SceneMain();
 	virtual ~SceneMain();
@@ -60,9 +72,15 @@ public:
 	// プレイヤーの弾がエネミーと接触したかどうか
 	virtual bool EnemyHit();
 	
-private:
-	// ショットの最大数
-	static constexpr int kShotMax = 128;
+	// プレイヤーとモブエネミーが接触したかどうか
+	virtual bool playerMobCheckHit();
+
+	// プレイヤーの弾とモブエネミーが接触したかどうか
+	virtual bool MobShotCheckHit();
+
+	// モブエネミーが防衛ラインを超えたかどうか
+	virtual bool MobDefenseLineCheckHit();
+
 
 private:
 	
@@ -79,12 +97,19 @@ private:
 	// モブエネミーのグラフィックハンドル
 	int m_hMobEnemiesGraphic[MobEnemies::kMobEnemiesGraphicDivNum];
 
-	
+	// 防衛ラインのグラフィックハンドル
+	int m_hDefenseLineGraphic[DefenseLineEffect::kDefenseLineEffectDivNum];
+
+
+
 	// ショットのグラフィックハンドル
 	int m_hShotGraphic;
+	int m_hEnemyShotGraphic;
 	int m_hEnemyRevShotGraphic;
 
 
+	// カウンター
+	int m_hCount;
 
 
 	// エネミーHP
@@ -97,12 +122,14 @@ private:
 	// エネミー
 	Enemy m_enemy;
 	// モブエネミー
-	MobEnemies m_mobEnemy;
+	MobEnemies m_mobEnemy[kObjectMax];
 	// ショット
-	Shot m_shot[kShotMax];
+	Shot m_shot[kObjectMax];
 	// エネミーショット
-	EnemyShot m_EnemyShot[kShotMax];
+	EnemyShot m_EnemyShot[kObjectMax];
 	// 回転照射するエネミーショット
-	EnemyRevShot m_EnemyRevShot[kShotMax];
+	EnemyRevShot m_EnemyRevShot[kObjectMax];
+	// 防衛ラインのエフェクト
+	DefenseLineEffect m_DefenseLine;
 
 };

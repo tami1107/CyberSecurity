@@ -1,18 +1,21 @@
-﻿#include "DxLib.h"
+﻿#include <DxLib.h>
+#include <cassert>
 #include "SceneMain.h"
 #include "SceneTitle.h"
-#include <cassert>
 
 
 SceneMain::SceneMain():
 	// グラフィック
-	m_hShotGraphic(-1),		// (エネミーのグラフィック)
-	m_hEnemyGraphic(-1),	// (ショットのグラフィック)
-	m_hEnemyRevShotGraphic(-1),	// (エネミーの回転ショットのグラフィック)
+	m_hShotGraphic(-1),		// ショットのグラフィック
+	m_hEnemyGraphic(-1),	// エネミーのグラフィック
+	m_hEnemyShotGraphic(-1),// エネミーのショットのグラフィック
+	m_hEnemyRevShotGraphic(-1),	// エネミーの回転ショットのグラフィック
 
 	// ショットの角度
 	m_angle(),
-
+	// カウンター
+	m_hCount(),
+	
 	// エネミーのHP
 	m_enemyHP(kEnemyHP)	
 {
@@ -28,6 +31,10 @@ SceneMain::SceneMain():
 	}
 	// モブエネミー
 	for (auto& handle : m_hMobEnemiesGraphic)
+	{
+		handle = -1;
+	}
+	for (auto& handle : m_hDefenseLineGraphic)
 	{
 		handle = -1;
 	}
@@ -77,7 +84,7 @@ void SceneMain::init()
 		m_player.setHandle(i, m_hPlayerGraphic[i]);
 	}
 
-	// player.hにプレイヤーの画像を送る
+	// player.hにプレイヤーエフェクトの画像を送る
 	for (int i = 0; i < Player::kPlayerGraphicDivNum; i++)
 	{
 		m_player.setEffect(i, m_hPlayerEffect[i]);
@@ -115,7 +122,7 @@ void SceneMain::init()
 	//GetGraphSize(mEffectG, &mEffectW, &mEffectH);
 
 
-	// m_hPlayerGraphicの中にプレイヤーの画像を入れる
+	// m_hMobEnemiesGraphicの中にモブエネミーの画像を入れる
 	LoadDivGraph(kMobEnemiesGraphicFilename, MobEnemies::kMobEnemiesGraphicDivNum,
 		MobEnemies::kMobEnemiesGraphicDivX, MobEnemies::kMobEnemiesGraphicDivY,
 		mobEnemyW / MobEnemies::kMobEnemiesGraphicDivX, mobEnemyH / MobEnemies::kMobEnemiesGraphicDivY, m_hMobEnemiesGraphic);
@@ -125,13 +132,18 @@ void SceneMain::init()
 	//	Player::kPlayerEffectDivX, Player::kPlayerEffectDivY,
 	//	pEffectW / Player::kPlayerEffectDivX, pEffectH / Player::kPlayerEffectDivY, m_hPlayerEffect);
 
-	m_mobEnemy.setMain(this);
-
+	for (auto& mobObject : m_mobEnemy)
+	{
+		mobObject.setMain(this);
+	}
 
 	//  m_hMobEnemies.hにモブエネミーの画像を送る
 	for (int i = 0; i < MobEnemies::kMobEnemiesGraphicDivNum; i++)
 	{
-		m_mobEnemy.setHandle(i, m_hMobEnemiesGraphic[i]);
+		for (auto& mobObject : m_mobEnemy)
+		{
+		mobObject.setHandle(i, m_hMobEnemiesGraphic[i]);
+		}
 	}
 
 	//// player.hにプレイヤーの画像を送る
@@ -139,16 +151,22 @@ void SceneMain::init()
 	//{
 	//	m_player.setEffect(i, m_hPlayerEffect[i]);
 	//}
+	
 
 
-	m_mobEnemy.init();// m_playerのinit(初期設定)を行う
 
 	//////////////////////////////////////////
 	//				ショット
 	//////////////////////////////////////////
 
-	m_hShotGraphic = LoadGraph(kPlayerShotGraphic);	// m_hShotGraphicの中にkPlayerShotGraphic(ショットの画像)を入れる
-	m_hEnemyRevShotGraphic = LoadGraph(kEnemyRevShotGraphic);	// m_hShotGraphicの中に(エネミーの回転ショットの画像)を入れる
+	// m_hShotGraphicの中にプレイヤーショットの画像を入れる
+	m_hShotGraphic = LoadGraph(kPlayerShotGraphic);
+
+	// m_hEnemyShotGraphicの中にエネミーのショットの画像を入れる
+	m_hEnemyShotGraphic = LoadGraph(kEnemyShotGraphic);	
+
+	// m_hShotGraphicの中にエネミーの回転ショットの画像を入れる
+	m_hEnemyRevShotGraphic = LoadGraph(kEnemyRevShotGraphic);	
 
 
 	// プレイヤーのすべてのショットにショットの画像を入れる
@@ -160,7 +178,7 @@ void SceneMain::init()
 	// エネミーのすべてのショットにショットの画像を入れる(直線ショット)
 	for (auto& shot : m_EnemyShot)
 	{
-		shot.setHandle(m_hShotGraphic);
+		shot.setHandle(m_hEnemyShotGraphic);
 	}
 
 	// エネミーのすべてのショットにショットの画像を入れる(回転ショット)
@@ -169,6 +187,33 @@ void SceneMain::init()
 		shot.setHandle(m_hEnemyRevShotGraphic);
 	}
 
+	//////////////////////////////////////////
+	//		   防衛ラインのエフェクト
+	//////////////////////////////////////////
+	// 防衛ラインのグラフィックサイズを取得
+	int DefenseLineW = {};
+	int DefenseLineH = {};
+	int DefenseLineG = LoadGraph(kDefenseLineFilename);
+	GetGraphSize(DefenseLineG, &DefenseLineW, &DefenseLineH);
+
+	// m_hDefenseLineGraphicの中にモブエネミーの画像を入れる
+	LoadDivGraph(kDefenseLineFilename, DefenseLineEffect::kDefenseLineEffectDivNum,
+		DefenseLineEffect::kDefenseLineEffectDivX, DefenseLineEffect::kDefenseLineEffectDivY,
+		DefenseLineW / DefenseLineEffect:: kDefenseLineEffectDivX, DefenseLineH / DefenseLineEffect::kDefenseLineEffectDivY,
+		m_hDefenseLineGraphic);
+
+	// 防衛ラインにすべての画像を入れる
+	for (int i = 0; i < DefenseLineEffect::kDefenseLineEffectDivNum; i++)
+	{
+		m_DefenseLine.setEffect(i, m_hDefenseLineGraphic[i]);
+	}
+
+	m_DefenseLine.setSizeX(DefenseLineW / DefenseLineEffect::kDefenseLineEffectDivX);
+
+	m_DefenseLine.init();// m_DefenseLineのinit(初期設定)を行う
+
+	// カウンター
+	m_hCount = 0;
 }
 
 // 終了処理
@@ -181,10 +226,16 @@ void SceneMain::end()
 	}
 	DeleteGraph(m_hEnemyGraphic);	// エネミーのグラフィックを削除する
 	// モブエネミーのグラフィックを削除する
-	for (auto& handle : m_hPlayerGraphic)
+	for (auto& handle : m_hMobEnemiesGraphic)
 	{
 		DeleteGraph(handle);
 	}
+	// 防衛ラインのグラフィックを削除する
+	for (auto& handle : m_hDefenseLineGraphic)
+	{
+		DeleteGraph(handle);
+	}
+
 	DeleteGraph(m_hShotGraphic);	// ショットのグラフィックを削除する
 	DeleteGraph(m_hEnemyRevShotGraphic);	// 回転するエネミーショットのグラフィックを削除する
 }
@@ -192,14 +243,34 @@ void SceneMain::end()
 // 毎フレームの処理
 SceneBase* SceneMain::update()
 {
+	m_hCount++;
+
+	if (m_hCount >= 60)
+	{
+		// モブエネミーのinit(初期設定)を行う
+		for (auto& mobObject : m_mobEnemy)
+		{
+			if (!mobObject.isExist())
+			{
+				mobObject.init();
+				m_hCount = 0;
+				break;
+			}
+		}
+	}
+
+
 	// プレイヤー処理のアップデート
 	m_player.update();
 	// エネミー処理のアップデート
 	//m_enemy.update();
+	
 
 	// モブエネミー処理のアップデート
-	m_mobEnemy.update();
-
+	for (auto& mobObject : m_mobEnemy)
+	{
+		mobObject.update();
+	}
 
 	// プレイヤーのすべてのショットのアップデート
 	for (auto& shot : m_shot)
@@ -219,6 +290,8 @@ SceneBase* SceneMain::update()
 		shot.update();
 	}
 
+	// m_DefenseLineのアップデート
+	m_DefenseLine.update();	
 
 	//////////////////////////////////////////
 	//				当たり判定
@@ -231,8 +304,13 @@ SceneBase* SceneMain::update()
 		return(new SceneTitle);
 	}
 
-	// プレイヤーの弾がエネミーに当たった場合、タイトルに戻る
-	if (EnemyHit() == true)
+	// プレイヤーの弾がモブエネミーに当たった場合の処理
+	if (playerMobCheckHit())
+	{
+	}
+
+	// プレイヤーの弾がエネミーに当たった場合の処理
+	if (EnemyHit())
 	{
 		// エネミーのHPを減らす
 		m_enemyHP--;
@@ -244,14 +322,27 @@ SceneBase* SceneMain::update()
 			return(new SceneTitle);
 		}
 	}
+
+	// モブエネミーの弾がプレイヤーに当たった場合の処理
+	if (MobShotCheckHit())
+	{
+		// モブエネミーをすべて消す
+		for (auto& mobObject : m_mobEnemy)
+		{
+			mobObject.setExist(false);
+		}
+	}
+
+	
+
+	
+
 	return this;
 }
 
 // 毎フレームの描画
 void SceneMain::draw()
 {
-	DrawBox(0, 0, 800, 600,GetColor(255,0,255), true);
-
 
 	// プレイヤーのショットの表示
 	for (auto& shot : m_shot)
@@ -275,8 +366,14 @@ void SceneMain::draw()
 	m_player.draw();
 	// エネミーの表示
 	m_enemy.draw();
+	for (auto& mobObject : m_mobEnemy)
+	{
 	// モブエネミーの表示
-	m_mobEnemy.draw();
+		mobObject.draw();
+	}
+
+	// m_DefenseLineの描画
+	m_DefenseLine.draw();
 
 	// デバッグ
 #if true
@@ -284,9 +381,7 @@ void SceneMain::draw()
 	DrawFormatString(0, 45, GetColor(255, 255, 255), "角度=%f", m_angle);
 	// エネミーのHP表示
 	DrawFormatString(0, 0, GetColor(255, 255, 255), "enemyHP:%d", m_enemyHP);
-	
-	
-
+	// 防衛ラインの表示
 
 #endif
 }
@@ -327,7 +422,6 @@ bool SceneMain::createEnemyShot(Vec2 pos)
 	return false;
 }
 
-
 // エネミーがショットを打つ(回転ショット)
 bool SceneMain::createEnemyRevShot(Vec2 pos)
 {
@@ -362,7 +456,7 @@ bool SceneMain::CheckHit()
 	float ar = kPlayerHitCircleSize + kEnemyHitCircleSize;// 当たり判定の大きさ
 	float dl = ar * ar;
 
-		// プレイヤーとエネミーが接触したとき
+	// プレイヤーとエネミーが接触したとき
 	if (dr < dl)
 	{
 		return true;
@@ -371,31 +465,109 @@ bool SceneMain::CheckHit()
 	return false;
 }
 
-// プレイヤーの弾がエネミーが接触したかどうか
-bool SceneMain::EnemyHit()
+// プレイヤーの弾がモブエネミーが接触したかどうか
+bool SceneMain::playerMobCheckHit()
 {
-	for (auto& shot : m_shot)
+	for (auto& mobObject : m_mobEnemy)
+	{
+		// モブエネミーが存在するとき
+		if (mobObject.isExist())
+		{
+			for (auto& shot : m_shot)
+			{
+				// 弾が存在するとき
+				if (shot.isExist())
+				{
+					// 円形の当たり判定
+					float dx = shot.getPos().x - mobObject.getPos().x;
+					float dy = shot.getPos().y - mobObject.getPos().y;
+					float dr = dx * dx + dy * dy;// A²＝B²＋C²
+
+					float ar = kPlayerShotCircleSize + kMobEnemiesHitCircleSize;// 当たり判定の大きさ
+					float dl = ar * ar;
+
+					if (dr < dl)
+					{
+						// モブエネミーに当たったプレイヤーの弾を消す
+						shot.setExist(false);
+						// プレイヤーの弾に当たったモブエネミーを消す
+						mobObject.setExist(false);
+						// プレイヤーの弾にモブエネミーが当たったとき
+						return true;
+					}
+				}
+			}
+		}
+	}
+	// プレイヤーの弾にモブエネミーが当たっていないとき
+	return false;
+}
+
+// モブエネミーの弾とプレイヤーが接触したかどうか
+bool SceneMain::MobShotCheckHit()
+{
+	for (auto& shot : m_EnemyShot)
 	{
 		// 弾が存在するとき
 		if (shot.isExist())
-		{
-			//円形の当たり判定
-			float dx = shot.getPos().x - m_enemy.getPos().x;
-			float dy = shot.getPos().y - m_enemy.getPos().y;
+		{	
+			// 円形の当たり判定
+			float dx = shot.getPos().x - m_player.getPos().x;
+			float dy = shot.getPos().y - m_player.getPos().y;
 			float dr = dx * dx + dy * dy;// A²＝B²＋C²
 
-			float ar = kPlayerShotCircleSize + kEnemyHitCircleSize;// 当たり判定の大きさ
+			float ar = kPlayerHitCircleSize + kEnemyShotCircleSize;// 当たり判定の大きさ
 			float dl = ar * ar;
 
 			if (dr < dl)
 			{
-				// エネミーに当たったショットを消す
+				// モブエネミーの弾に当たったプレイヤーを消す
 				shot.setExist(false);
-				// エネミーにプレイヤーの弾が当たったとき
+
+				// プレイヤーの弾にモブエネミーが当たったとき
 				return true;
 			}
 		}
 	}
-	// エネミーにプレイヤーの弾は当たっていないとき
+
 	return false;
 }
+
+bool SceneMain::MobDefenseLineCheckHit()
+{
+	return false;
+}
+
+
+
+
+// プレイヤーの弾がエネミーが接触したかどうか
+bool SceneMain::EnemyHit()
+{
+	//for (auto& shot : m_shot)
+	//{
+	//	// 弾が存在するとき
+	//	if (shot.isExist())
+	//	{
+	//		// 円形の当たり判定
+	//		float dx = shot.getPos().x - m_enemy.getPos().x;
+	//		float dy = shot.getPos().y - m_enemy.getPos().y;
+	//		float dr = dx * dx + dy * dy;// A²＝B²＋C²
+
+	//		float ar = kPlayerShotCircleSize + kEnemyHitCircleSize;// 当たり判定の大きさ
+	//		float dl = ar * ar;
+
+	//		if (dr < dl)
+	//		{
+	//			// エネミーに当たったショットを消す
+	//			shot.setExist(false);
+	//			// エネミーにプレイヤーの弾が当たったとき
+	//			return true;
+	//		}
+	//	}
+	//}
+	//// エネミーにプレイヤーの弾は当たっていないとき
+	return false;
+}
+
+

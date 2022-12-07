@@ -25,14 +25,8 @@ public:
 
 	// 存在するか
 	bool isExist() const { return m_isExist; }
-	void setExist(bool isExist) { m_isExist = isExist; }
+	void setExist (bool isExist) { m_isExist = isExist; }
 
-	// 弾がプレイヤーに当たったかどうか
-	virtual bool CheckHit();
-
-	// エネミーのグラフィックサイズ
-	void setPlayerGraphicX(int PlayerGraphicX) { m_PlayerGraphicX = PlayerGraphicX; }
-	void setPlayerGraphicY(int PlayerGraphicY) { m_PlayerGraphicY = PlayerGraphicY; }
 
 	// 情報の取得
 	Vec2 getPos() const { return m_pos; }
@@ -40,18 +34,6 @@ public:
 private:
 	// グラフィックハンドル
 	int m_handle;
-
-	// ショットのグラフィックサイズ
-	int m_GraphicSizeX;
-	int m_GraphicSizeY;
-
-	// ショットの中心座標
-	float m_CenterPosX;
-	float m_CenterPosY;
-
-	// エネミーのグラフィックサイズ
-	int m_PlayerGraphicX;
-	int m_PlayerGraphicY;
 
 	// 存在フラグ
 	bool m_isExist;

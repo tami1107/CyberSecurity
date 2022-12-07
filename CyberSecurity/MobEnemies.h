@@ -26,7 +26,6 @@ public:
 	void setMain(SceneMain* pMain) { m_pMain = pMain; }
 
 	// グラフィックデータ設定
-
 	void setHandle(int index, int handle) { m_handle[index] = handle; }
 	void setEffect(int index, int handle) { m_effect[index] = handle; }
 
@@ -40,8 +39,15 @@ public:
 	// 描画
 	void draw();
 
+	// 存在するか
+	bool isExist() const { return m_isExist; }
+	void setExist(bool isExist) { m_isExist = isExist; }
+	
+
+
 	// 情報の取得
 	Vec2 getPos() const { return m_pos; }
+
 
 private:
 
@@ -54,7 +60,10 @@ private:
 	int m_shotInterval;
 
 	// フレーム数をカウントする
-	int m_count;
+	int m_frameCount;
+
+	// 回数をカウントする
+	int m_memberCount;
 
 	// キャラクターのアニメーション
 	int m_charAnimeNo;	// 表示する番号
@@ -65,8 +74,13 @@ private:
 	int m_effectAnimeNo;	// 表示する番号
 	int m_effectAnimeFrame;
 	int m_effectDirNo;
+
+	// 存在フラグ
+	bool m_isExist;
+
 	// 表示位置
 	Vec2 m_pos;
 	// 移動
 	Vec2 m_vec;
+
 };

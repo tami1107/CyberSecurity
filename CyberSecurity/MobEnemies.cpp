@@ -1,32 +1,36 @@
-#include <DxLib.h>
+ï»¿#include <DxLib.h>
+#include <cassert>
+#include "SceneMain.h"
 #include "MobEnemies.h"
 #include "game.h"
-#include "SceneMain.h"
-#include <cassert>
-
 
 
 namespace
 {
-	// X•ûŒüAY•ûŒü‚ÌˆÚ“®‘¬“x
+	// Xæ–¹å‘ã€Yæ–¹å‘ã®ç§»å‹•é€Ÿåº¦
 	constexpr float kSpeed = 2.0f;
-	// ƒVƒ‡ƒbƒg‚Ì¶¬ŠÔŠu(ƒtƒŒ[ƒ€”)
-	constexpr int kShotInterval = 8;
-	// ƒLƒƒƒ‰ƒNƒ^[ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì‘¬“x
+	
+	// ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é€Ÿåº¦
 	constexpr int kCharAnimeChangeFrame = 8;
 
-	// ƒGƒtƒFƒNƒgƒAƒjƒ[ƒVƒ‡ƒ“‚Ì‘¬“x
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é€Ÿåº¦
 	constexpr int kEffectAnimeChangeFrame = 8;
-	// ƒ‚ƒuƒGƒlƒ~[‚Ì‰~Œ`‚Ì“–‚½‚è”»’è‚Ì‘å‚«‚³
-	static constexpr int kHitCircleSize = SceneMain::kMobEnemiesHitCircleSize;
+
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å††å½¢ã®å½“ãŸã‚Šåˆ¤å®šã®å¤§ãã•
+	static constexpr int kPlayerHitCircleSize = SceneMain::kPlayerHitCircleSize;	
+
+	// ãƒ¢ãƒ–ã‚¨ãƒãƒŸãƒ¼ã®å††å½¢ã®å½“ãŸã‚Šåˆ¤å®šã®å¤§ãã•
+	static constexpr int kMobEnemyHitCircleSize = SceneMain::kMobEnemiesHitCircleSize;
 }
 
 MobEnemies::MobEnemies() :
 	m_pMain(nullptr),
-	m_shotInterval(0),
+	m_isExist(),
+	
 	m_pos(),
 	m_vec(),
-	m_count(),
+	m_frameCount(),
+	m_memberCount(),
 	m_charAnimeNo(),
 	m_charAnimeFrame(),
 	m_charDirNo(),
@@ -46,7 +50,6 @@ MobEnemies::MobEnemies() :
 
 MobEnemies::~MobEnemies()
 {
-
 }
 
 void MobEnemies::init()
@@ -56,7 +59,8 @@ void MobEnemies::init()
 	m_vec.x = 0.0f;
 	m_vec.y = kSpeed;
 
-	m_count = 0;
+	m_frameCount = 0;
+	m_memberCount = 0;
 	m_charAnimeNo = {};
 	m_charAnimeFrame = {};
 	m_charDirNo = {};
@@ -64,28 +68,45 @@ void MobEnemies::init()
 	m_effectAnimeFrame = {};
 	m_effectDirNo = {};
 
-	m_shotInterval = kShotInterval;
+	m_isExist = true;
+
+	
 }
 
 void MobEnemies::update()
 {
-	//m_shotInterval--;
+
+
+
+	// æ•µãŒå­˜åœ¨ã—ãªã‹ã£ãŸå ´åˆã€ã“ã“ã§å‡¦ç†ã‚’çµ‚äº†ã™ã‚‹
+	if (!m_isExist) return;
+
+
+
 	m_charDirNo = 0;
 
-	if (m_shotInterval < 0) m_shotInterval = 0;
+	
 
-	// ƒ‚ƒuƒGƒlƒ~[‚Ì“®‚«‚ğ~‚ß‚é
-	if (m_pos.y >= 200)
+	// ãƒ¢ãƒ–ã‚¨ãƒãƒŸãƒ¼ã®å‹•ãã‚’æ­¢ã‚ã‚‹
+	if (m_pos.y >= 150)
 	{
-		m_vec.y = 0;
-		if (m_vec.y == 0)m_count++;
-		if (m_count >= 60)
+		if (m_memberCount == 0)
 		{
-			m_count = 60;
+			m_pMain->createEnemyShot(m_pos);
+			m_memberCount = 1;
+		}
+		
+
+		m_vec.y = 0;
+		if (m_vec.y == 0)m_frameCount++;
+		if (m_frameCount >= 60)
+		{
+			m_frameCount = 60;
 			m_vec.y = kSpeed;
 		}
 	}
 
+	
 
 
 
@@ -114,24 +135,39 @@ void MobEnemies::update()
 	m_effectDirNo = 0;*/
 
 	m_pos += m_vec;
-	
+
+	// ãƒ¢ãƒ–ã‚¨ãƒãƒŸãƒ¼ãŒç”»é¢å¤–ã«å‡ºãŸå ´åˆã€å­˜åœ¨ã‚’æ¶ˆã™
+	if (m_pos.y < 0 || m_pos.y > Game::kScreenHeight ||
+		m_pos.x < 0 || m_pos.x > Game::kScreenWidth)
+	{
+		m_isExist = false;
+	}
 }
+	
+
 
 void MobEnemies::draw()
 {
-	// ƒ‚ƒuƒGƒlƒ~[‚Ì•\¦(À•W‚Ì’†S‚É‰æ‘œ‚ğ•\¦‚·‚é)
+	// æ•µãŒå­˜åœ¨ã—ãªã‹ã£ãŸå ´åˆã€ã“ã“ã§å‡¦ç†ã‚’çµ‚äº†ã™ã‚‹
+	if (!m_isExist) return;
+
+
+
+	// ãƒ¢ãƒ–ã‚¨ãƒãƒŸãƒ¼ã®è¡¨ç¤º(åº§æ¨™ã®ä¸­å¿ƒã«ç”»åƒã‚’è¡¨ç¤ºã™ã‚‹)
 	DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
 		1.0, 0.0, m_handle[m_charAnimeNo], true);
-	// ƒGƒtƒFƒNƒg‚Ì•\¦(À•W‚Ì’†S‚É‰æ‘œ‚ğ•\¦‚·‚é)
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®è¡¨ç¤º(åº§æ¨™ã®ä¸­å¿ƒã«ç”»åƒã‚’è¡¨ç¤ºã™ã‚‹)
 	/*DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
 		1.7, 0.0, m_effect[m_effectAnimeNo], true);*/
 
 	assert(m_charAnimeNo <= 12);
 	assert(m_charAnimeNo >= 0);
 
-	// ƒfƒoƒbƒO
+	// ãƒ‡ãƒãƒƒã‚°
 #if true
-	// ƒ‚ƒuƒGƒlƒ~[‚Ì“–‚½‚è”»’è‚Ì‘å‚«‚³
-	DrawCircle((int)m_pos.x, (int)m_pos.y, kHitCircleSize, GetColor(0, 255, 255), FALSE);
+	// ãƒ¢ãƒ–ã‚¨ãƒãƒŸãƒ¼ã®å½“ãŸã‚Šåˆ¤å®šã®å¤§ãã•
+	DrawCircle((int)m_pos.x, (int)m_pos.y, kMobEnemyHitCircleSize, GetColor(0, 255, 255), FALSE);
 #endif
 }
+
+

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Vec2.h"
-#include "EnemyRevShot.h"
 
 class SceneMain;
 
@@ -44,5 +43,5 @@ private:
 	// ˆÚ“®
 	Vec2 m_vec;
 
-	EnemyRevShot m_EnemyRevShot;
+	
 };

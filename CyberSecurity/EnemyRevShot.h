@@ -37,14 +37,6 @@ private:
 	// グラフィックハンドル
 	int m_handle;
 
-	// ショットのグラフィックサイズ
-	int m_GraphicSizeX;
-	int m_GraphicSizeY;
-
-	// ショットの中心座標
-	float m_CenterPosX;
-	float m_CenterPosY;
-
 	// ラジアン
 	float m_rad;
 

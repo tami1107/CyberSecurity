@@ -1,4 +1,4 @@
-#include "DxLib.h"
+#include <DxLib.h>
 #include "game.h"
 #include "Player.h"
 #include "SceneMain.h"
@@ -40,7 +40,6 @@ Player::Player() :
 
 Player::~Player()
 {
-	
 }
 
 void Player::init()
@@ -69,9 +68,10 @@ void Player::update()
 	m_charAnimeNo = 1;
 	m_effectDirNo = 8;
 
+	
 	if (padState & PAD_INPUT_UP)
 	{
-		m_effectDirNo = 12;
+		m_effectDirNo = 11;
 		// 3ボタンを押していたら速度を下げる
 		if (padState & PAD_INPUT_3)m_pos.y -= (kSpeed - kSlowSpeed);
 		else m_pos.y -= kSpeed;
@@ -102,7 +102,7 @@ void Player::update()
 	if ((padState & PAD_INPUT_LEFT)&&(padState & PAD_INPUT_RIGHT)) m_charAnimeNo = 1;// 1番の画像を表示する
 	if (padState & PAD_INPUT_3)m_effectDirNo = 0;
 
-	// キー入力処理
+	// ショット
 	if (padState & PAD_INPUT_1)
 	{
 		if ((m_pMain) && (m_shotInterval <= 0))
@@ -131,14 +131,14 @@ void Player::update()
 
 void Player::draw()
 {
-	// プレイヤーの表示(座標の中心に画像を表示する)
-	//DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
-	//	0.7, 0.0, m_handle[m_charAnimeNo], true);
+	// プレイヤーエフェクトの表示(座標の中心に画像を表示する)
+	DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y+18),
+		1.0, 0.0, m_effect[m_effectAnimeNo], true);
 	// プレイヤーの表示(座標の中心に画像を表示する)
 	DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
-		2.0, 0.0, m_effect[m_effectAnimeNo], true);
+		0.7, 0.0, m_handle[m_charAnimeNo], true);
 #if true
 	// プレイヤーの当たり判定の大きさ
-	DrawCircle((int)m_pos.x, (int)m_pos.y, kHitCircleSize, GetColor(0, 255, 255), FALSE);
+	DrawCircle((int)m_pos.x, (int)m_pos.y, kHitCircleSize, GetColor(255, 0, 0), FALSE);
 #endif
 }

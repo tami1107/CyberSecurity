@@ -1,6 +1,6 @@
-#include "DxLib.h"
-#include "game.h"
+#include <DxLib.h>
 #include "SceneMain.h"
+#include "game.h"
 
 
 namespace 
@@ -52,15 +52,11 @@ void Enemy::update()
 	//	m_shotInterval = kShotInterval;
 	//}
 
-
 	if ((m_pMain) && (m_shotInterval <= 0))
 	{
 
+		m_pMain->createEnemyShot(m_pos);
 		
-		m_pMain->createEnemyRevShot(m_pos);
-
-		
-
 		m_shotInterval = kShotInterval;
 	}
 
@@ -91,3 +87,5 @@ void Enemy::draw()
 	DrawCircle((int)m_pos.x,(int)m_pos.y, kShotCircleSize, GetColor(255, 255, 255), FALSE);
 #endif
 }
+
+

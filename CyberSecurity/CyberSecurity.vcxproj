@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DefenseLineEffect.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="EnemyRevShot.cpp" />
     <ClCompile Include="EnemyShot.cpp" />
@@ -153,6 +154,7 @@
     <ClCompile Include="Vec2.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DefenseLineEffect.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyRevShot.h" />
     <ClInclude Include="EnemyShot.h" />
