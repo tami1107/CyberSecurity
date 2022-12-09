@@ -9,15 +9,13 @@ namespace
 {
 	// エフェクトアニメーションの速度
 	constexpr int kEffectAnimeChangeFrame = 8;
-	// 防衛ラインの座標
-	constexpr int kDefenseLinePosY = 500;
-	
 }
 
 DefenseLineEffect::DefenseLineEffect() :
 	m_pMain(nullptr),
 	m_pos(),
 
+	m_sizeX(),
 	m_number(),
 	m_animeNo(),
 	m_animeFrame(),
@@ -72,8 +70,9 @@ void DefenseLineEffect::draw()
 	}
 
 	// デバッグ
-#if true
-	
+#if false
+	// m_numberの中身をみる
+	DrawFormatString(0, 0, 0xffffff, "%d", m_number);
 #endif
 }
 

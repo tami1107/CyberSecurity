@@ -8,7 +8,7 @@ namespace
 	// ショットスピード
 	constexpr float kShotSpeed = 5.0f;
 	// 当たり判定
-	static constexpr int  kPlayerShotCircleSize = SceneMain::kPlayerShotCircleSize;	// (エネミーショットの円形の当たり判定の大きさ)
+	static constexpr float kPlayerShotCircleSize = SceneMain::kPlayerShotCircleSize;	// (エネミーショットの円形の当たり判定の大きさ)
 
 }
 
@@ -57,11 +57,11 @@ void EnemyRevShot::draw()
 	// 弾が存在しなかった場合、ここで処理を終了する
 	if (!m_isExist)return;
 
-	DrawRotaGraph(m_pos.x, m_pos.y, 1.0, m_rad, m_handle, true);
+	DrawRotaGraph((int)m_pos.x, (int)m_pos.y, 1.0, m_rad, m_handle, true);
 	// デバッグ
 #if true
 	// ショットの当たり判定
-	DrawCircle((int)m_pos.x, (int)m_pos.y, kPlayerShotCircleSize, GetColor(255, 0, 0), FALSE);
+	DrawCircle((float)m_pos.x, (float)m_pos.y, kPlayerShotCircleSize, GetColor(255, 0, 0), FALSE);
 #endif
 }
 

@@ -19,6 +19,10 @@ public:
 	static constexpr int kPlayerEffectDivY = 4;
 	static constexpr int kPlayerEffectDivNum = kPlayerEffectDivX * kPlayerEffectDivY;
 
+	// Å‘å”
+	static constexpr int kObjectMax = 128;
+
+public:
 	Player();
 	virtual ~Player();
 
@@ -60,6 +64,7 @@ private:
 	int m_effectAnimeNo;	// •\¦‚·‚é”Ô†
 	int m_effectAnimeFrame;
 	int m_effectDirNo;
+
 	// •\¦ˆÊ’u
 	Vec2 m_pos;
 	// ˆÚ“®

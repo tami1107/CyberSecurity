@@ -1,4 +1,4 @@
-#include <DxLib.h>
+ï»¿#include <DxLib.h>
 #include "game.h"
 #include "Player.h"
 #include "SceneMain.h"
@@ -6,16 +6,16 @@
 
 namespace 
 {
-	// ƒvƒŒƒCƒ„[‚Ì’á‘¬‰»
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½é€ŸåŒ–
 	constexpr float  kSlowSpeed = 2.0f;
-	// X•ûŒüAY•ûŒü‚ÌÅ‘å‘¬“x
+	// Xæ–¹å‘ã€Yæ–¹å‘ã®æœ€å¤§é€Ÿåº¦
 	constexpr float kSpeed = 5.0f;
-	// ƒVƒ‡ƒbƒg‚Ì¶¬ŠÔŠu(ƒtƒŒ[ƒ€”)
+	// ã‚·ãƒ§ãƒƒãƒˆã®ç”Ÿæˆé–“éš”(ãƒ•ãƒ¬ãƒ¼ãƒ æ•°)
 	constexpr int kShotInterval = 8;
-	// ƒGƒtƒFƒNƒgƒAƒjƒ[ƒVƒ‡ƒ“‚Ì‘¬“x
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é€Ÿåº¦
 	constexpr int kEffectAnimeChangeFrame = 8;
-	// ƒvƒŒƒCƒ„[‚Ì‰~Œ`‚Ì“–‚½‚è”»’è‚Ì‘å‚«‚³
-	static constexpr int kHitCircleSize = SceneMain::kPlayerHitCircleSize;	
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å††å½¢ã®å½“ãŸã‚Šåˆ¤å®šã®å¤§ãã•
+	static constexpr float kHitCircleSize = SceneMain::kPlayerHitCircleSize;	
 }
 
 Player::Player() :
@@ -62,7 +62,7 @@ void Player::update()
 	m_shotInterval--;
 	if (m_shotInterval < 0) m_shotInterval = 0;
 
-	// ƒpƒbƒh(‚à‚µ‚­‚ÍƒL[ƒ{[ƒh)‚©‚ç‚Ì“ü—Í‚ğæ“¾‚·‚é
+	// ãƒ‘ãƒƒãƒ‰(ã‚‚ã—ãã¯ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰)ã‹ã‚‰ã®å…¥åŠ›ã‚’å–å¾—ã™ã‚‹
 	int padState = GetJoypadInputState(DX_INPUT_KEY_PAD1);
 
 	m_charAnimeNo = 1;
@@ -72,7 +72,7 @@ void Player::update()
 	if (padState & PAD_INPUT_UP)
 	{
 		m_effectDirNo = 11;
-		// 3ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚Ä‚¢‚½‚ç‘¬“x‚ğ‰º‚°‚é
+		// 3ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ã„ãŸã‚‰é€Ÿåº¦ã‚’ä¸‹ã’ã‚‹
 		if (padState & PAD_INPUT_3)m_pos.y -= (kSpeed - kSlowSpeed);
 		else m_pos.y -= kSpeed;
 		
@@ -80,29 +80,29 @@ void Player::update()
 	if (padState & PAD_INPUT_DOWN)
 	{
 		m_effectDirNo = 4;
-		// 3ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚Ä‚¢‚½‚ç‘¬“x‚ğ‰º‚°‚é
+		// 3ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ã„ãŸã‚‰é€Ÿåº¦ã‚’ä¸‹ã’ã‚‹
 		if (padState & PAD_INPUT_3)m_pos.y += (kSpeed - kSlowSpeed);
 		else m_pos.y += kSpeed;
 	}
 	if (padState & PAD_INPUT_LEFT)
 	{
-		// 3ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚Ä‚¢‚½‚ç‘¬“x‚ğ‰º‚°‚é
+		// 3ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ã„ãŸã‚‰é€Ÿåº¦ã‚’ä¸‹ã’ã‚‹
 		if (padState & PAD_INPUT_3)m_pos.x -= (kSpeed - kSlowSpeed);
 		else m_pos.x -= kSpeed;
-		// 0”Ô‚Ì‰æ‘œ‚ğ•\¦‚·‚é
+		// 0ç•ªã®ç”»åƒã‚’è¡¨ç¤ºã™ã‚‹
 		m_charAnimeNo = 0;
 	}
 	if (padState & PAD_INPUT_RIGHT)
-	{	// 3ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚Ä‚¢‚½‚ç‘¬“x‚ğ‰º‚°‚é
+	{	// 3ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ã„ãŸã‚‰é€Ÿåº¦ã‚’ä¸‹ã’ã‚‹
 		if (padState & PAD_INPUT_3)m_pos.x += (kSpeed - kSlowSpeed);
 		else m_pos.x += kSpeed;
-		// 2”Ô‚Ì‰æ‘œ‚ğ•\¦‚·‚é
+		// 2ç•ªã®ç”»åƒã‚’è¡¨ç¤ºã™ã‚‹
 		m_charAnimeNo = 2;
 	}
-	if ((padState & PAD_INPUT_LEFT)&&(padState & PAD_INPUT_RIGHT)) m_charAnimeNo = 1;// 1”Ô‚Ì‰æ‘œ‚ğ•\¦‚·‚é
+	if ((padState & PAD_INPUT_LEFT)&&(padState & PAD_INPUT_RIGHT)) m_charAnimeNo = 1;// 1ç•ªã®ç”»åƒã‚’è¡¨ç¤ºã™ã‚‹
 	if (padState & PAD_INPUT_3)m_effectDirNo = 0;
 
-	// ƒVƒ‡ƒbƒg
+	// ã‚·ãƒ§ãƒƒãƒˆ
 	if (padState & PAD_INPUT_1)
 	{
 		if ((m_pMain) && (m_shotInterval <= 0))
@@ -131,14 +131,16 @@ void Player::update()
 
 void Player::draw()
 {
-	// ƒvƒŒƒCƒ„[ƒGƒtƒFƒNƒg‚Ì•\¦(À•W‚Ì’†S‚É‰æ‘œ‚ğ•\¦‚·‚é)
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®è¡¨ç¤º(åº§æ¨™ã®ä¸­å¿ƒã«ç”»åƒã‚’è¡¨ç¤ºã™ã‚‹)
 	DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y+18),
 		1.0, 0.0, m_effect[m_effectAnimeNo], true);
-	// ƒvƒŒƒCƒ„[‚Ì•\¦(À•W‚Ì’†S‚É‰æ‘œ‚ğ•\¦‚·‚é)
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®è¡¨ç¤º(åº§æ¨™ã®ä¸­å¿ƒã«ç”»åƒã‚’è¡¨ç¤ºã™ã‚‹)
 	DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
 		0.7, 0.0, m_handle[m_charAnimeNo], true);
 #if true
-	// ƒvƒŒƒCƒ„[‚Ì“–‚½‚è”»’è‚Ì‘å‚«‚³
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å½“ãŸã‚Šåˆ¤å®šã®å¤§ãã•
 	DrawCircle((int)m_pos.x, (int)m_pos.y, kHitCircleSize, GetColor(255, 0, 0), FALSE);
 #endif
 }
+
+

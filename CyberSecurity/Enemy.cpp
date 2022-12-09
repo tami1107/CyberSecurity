@@ -11,7 +11,7 @@ namespace
 	// ショットの生成間隔(フレーム数)
 	constexpr int kShotInterval = 4;
 	// エネミーショットの円形の当たり判定の大きさ
-	static constexpr int kShotCircleSize = SceneMain::kEnemyHitCircleSize;
+	static constexpr float kShotCircleSize = SceneMain::kEnemyHitCircleSize;
 }
 
 

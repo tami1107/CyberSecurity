@@ -147,6 +147,7 @@
     <ClCompile Include="MobEnemies.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="SceneBase.cpp" />
+    <ClCompile Include="SceneGameClear.cpp" />
     <ClCompile Include="SceneMain.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="SceneTitle.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="MobEnemies.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="SceneBase.h" />
+    <ClInclude Include="SceneGameClear.h" />
     <ClInclude Include="SceneMain.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="SceneTitle.h" />

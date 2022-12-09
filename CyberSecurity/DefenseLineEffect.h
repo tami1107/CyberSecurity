@@ -12,6 +12,9 @@ public:
 	static constexpr int kDefenseLineEffectDivY = 1;
 	static constexpr int kDefenseLineEffectDivNum = kDefenseLineEffectDivX * kDefenseLineEffectDivY;
 
+	// –h‰qƒ‰ƒCƒ“‚ÌÀ•W
+	static constexpr int kDefenseLinePosY = 500;
+
 public:
 	DefenseLineEffect();
 	virtual ~DefenseLineEffect();

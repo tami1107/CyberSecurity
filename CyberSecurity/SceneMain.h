@@ -9,6 +9,7 @@
 #include "SceneBase.h"
 #include "DefenseLineEffect.h"
 
+
 class SceneMain : public SceneBase
 {
 public:
@@ -18,24 +19,21 @@ public:
 	const char* const kPlayerEffectFilename = "data/engine.png";	// プレイヤーのエフェクト
 	const char* const kEnemyGraphic = "data/player.bmp";	// エネミーのグラフィック
 	const char* const kMobEnemiesGraphicFilename = "data/MobEnemies.png";	// モブエネミーのグラフィック
+	const char* const kMobEnemiesEffectFilename = "data/explosion_45.png";	// モブエネミーのエフェクト
 	const char* const kPlayerShotGraphic = "data/PlayerShot.png";	// プレイヤーショットのグラフィック
 	const char* const kEnemyShotGraphic = "data/EnemyShot.png";	// プレイヤーショットのグラフィック
 	const char* const kEnemyRevShotGraphic = "data/EnemyShot.png";	// エネミーの回転ショットのグラフィック
 	const char* const kDefenseLineFilename = "data/Path.png";	// 防衛ラインのエフェクト
 
 	// 当たり判定の大きさ
-	static constexpr int kPlayerHitCircleSize = 4;	// プレイヤーの円形の当たり判定の大きさ
-	static constexpr int kEnemyHitCircleSize = 40;	// エネミーの円形の当たり判定の大きさ
-	static constexpr int kMobEnemiesHitCircleSize = 20;	// モブエネミーの円形の当たり判定の大きさ
-	static constexpr int kPlayerShotCircleSize = 5;	// プレイヤーショットの円形の当たり判定の大きさ
-	static constexpr int kEnemyShotCircleSize = 5;	// エネミーショットの円形の当たり判定の大きさ
-	static constexpr int kGrazeCircleSize = 20;		// プレイヤーのグレイズの円形の当たり判定の大きさ
+	static constexpr float kPlayerHitCircleSize = 4;	// プレイヤーの円形の当たり判定の大きさ
+	static constexpr float kEnemyHitCircleSize = 40;	// エネミーの円形の当たり判定の大きさ
+	static constexpr float kMobEnemiesHitCircleSize = 20;	// モブエネミーの円形の当たり判定の大きさ
+	static constexpr float kPlayerShotCircleSize = 5;	// プレイヤーショットの円形の当たり判定の大きさ
+	static constexpr float kEnemyShotCircleSize = 5;	// エネミーショットの円形の当たり判定の大きさ
+	static constexpr float kGrazeCircleSize = 20;		// プレイヤーのグレイズの円形の当たり判定の大きさ
 
 	
-	
-	// 防衛ラインエフェクトアニメーションの速度
-	int kDefenseLineAnimeChangeFrame = 8;
-
 	// エネミーのHP
 	static constexpr int kEnemyHP = 5;
 
@@ -67,23 +65,24 @@ public:
 	bool createEnemyRevShot(Vec2 pos);
 
 	// プレイヤーとエネミーが接触したかどうか
-	virtual bool CheckHit();
+	virtual bool playerEnemyCheckHit();
 
 	// プレイヤーの弾がエネミーと接触したかどうか
-	virtual bool EnemyHit();
+	virtual bool pShotEnemyCheckHit();
 	
-	// プレイヤーとモブエネミーが接触したかどうか
-	virtual bool playerMobCheckHit();
-
 	// プレイヤーの弾とモブエネミーが接触したかどうか
-	virtual bool MobShotCheckHit();
+	virtual bool pShotMobCheckHit();
+
+	// プレイヤーがモブエネミーの弾に接触したかどうか
+	virtual bool playerMobShotCheckHit();
+
+	// プレイヤーがモブエネミーに接触したかどうか
+	virtual bool playerMobCheckHit();
 
 	// モブエネミーが防衛ラインを超えたかどうか
 	virtual bool MobDefenseLineCheckHit();
 
-
 private:
-	
 
 	// プレイヤーのグラフィックハンドル
 	int m_hPlayerGraphic[Player::kPlayerGraphicDivNum];
@@ -96,6 +95,8 @@ private:
 
 	// モブエネミーのグラフィックハンドル
 	int m_hMobEnemiesGraphic[MobEnemies::kMobEnemiesGraphicDivNum];
+	int m_hMobEnemiesEffect[MobEnemies::kMobEnemiesEffectDivNum];
+
 
 	// 防衛ラインのグラフィックハンドル
 	int m_hDefenseLineGraphic[DefenseLineEffect::kDefenseLineEffectDivNum];
@@ -116,6 +117,16 @@ private:
 	int m_enemyHP;
 
 	float m_angle;
+
+	// エネミーやショットを消す
+	bool m_allDelete;
+
+
+	// すべてのモブエネミーを倒したかどうか
+	bool m_allMobEnemiesKill;
+
+	// モブエネミーを倒した数
+	int m_MobKillCount;
 
 	// プレイヤー
 	Player m_player;

@@ -14,13 +14,13 @@ namespace
 	constexpr int kCharAnimeChangeFrame = 8;
 
 	// エフェクトアニメーションの速度
-	constexpr int kEffectAnimeChangeFrame = 8;
+	constexpr int kEffectAnimeChangeFrame = 1;
 
 	// プレイヤーの円形の当たり判定の大きさ
-	static constexpr int kPlayerHitCircleSize = SceneMain::kPlayerHitCircleSize;	
+	static constexpr float kPlayerHitCircleSize = SceneMain::kPlayerHitCircleSize;	
 
 	// モブエネミーの円形の当たり判定の大きさ
-	static constexpr int kMobEnemyHitCircleSize = SceneMain::kMobEnemiesHitCircleSize;
+	static constexpr float kMobEnemyHitCircleSize = SceneMain::kMobEnemiesHitCircleSize;
 }
 
 MobEnemies::MobEnemies() :
@@ -54,7 +54,7 @@ MobEnemies::~MobEnemies()
 
 void MobEnemies::init()
 {
-	m_pos.x = GetRand(Game::kScreenWidth);
+	m_pos.x = GetRand((float)Game::kScreenWidth);
 	m_pos.y = 0;
 	m_vec.x = 0.0f;
 	m_vec.y = kSpeed;
@@ -75,17 +75,14 @@ void MobEnemies::init()
 
 void MobEnemies::update()
 {
-
-
-
 	// 敵が存在しなかった場合、ここで処理を終了する
-	if (!m_isExist) return;
-
-
+	if (!m_isExist)
+	{
+		return;
+	}
 
 	m_charDirNo = 0;
 
-	
 
 	// モブエネミーの動きを止める
 	if (m_pos.y >= 150)
@@ -96,7 +93,6 @@ void MobEnemies::update()
 			m_memberCount = 1;
 		}
 		
-
 		m_vec.y = 0;
 		if (m_vec.y == 0)m_frameCount++;
 		if (m_frameCount >= 60)
@@ -107,21 +103,17 @@ void MobEnemies::update()
 	}
 
 	
-
-
-
 	m_charAnimeFrame++;
-	if (m_charAnimeFrame >= kMobEnemiesGraphicDivX * kEffectAnimeChangeFrame)
+	if (m_charAnimeFrame >= kMobEnemiesGraphicDivX * kCharAnimeChangeFrame)
 	{
 		m_charAnimeFrame = 0;
 	}
 
-	/*m_effectAnimeFrame++;
+	m_effectAnimeFrame++;
 	if (m_effectAnimeFrame >= kMobEnemiesEffectDivX * kEffectAnimeChangeFrame)
 	{
 		m_effectAnimeFrame = 0;
-	}*/
-
+	}
 
 
 	int tempCharAnimeNo = m_charAnimeFrame / kCharAnimeChangeFrame;
@@ -129,10 +121,10 @@ void MobEnemies::update()
 
 	m_charDirNo = 0;
 
-	/*int tempEffectAnimeNo = m_effectAnimeFrame / kEffectAnimeChangeFrame;
+	int tempEffectAnimeNo = m_effectAnimeFrame / kEffectAnimeChangeFrame;
 	m_effectAnimeNo = m_effectDirNo + tempEffectAnimeNo;
 
-	m_effectDirNo = 0;*/
+	m_effectDirNo = 0;
 
 	m_pos += m_vec;
 
@@ -144,21 +136,23 @@ void MobEnemies::update()
 	}
 }
 	
-
-
 void MobEnemies::draw()
 {
 	// 敵が存在しなかった場合、ここで処理を終了する
-	if (!m_isExist) return;
+	if (!m_isExist)
+	{
+
+		return;
+	}
 
 
+	// エフェクトの表示(座標の中心に画像を表示する)
+	DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
+		1.0, 0.0, m_effect[m_effectAnimeNo], true);
 
 	// モブエネミーの表示(座標の中心に画像を表示する)
 	DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
 		1.0, 0.0, m_handle[m_charAnimeNo], true);
-	// エフェクトの表示(座標の中心に画像を表示する)
-	/*DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
-		1.7, 0.0, m_effect[m_effectAnimeNo], true);*/
 
 	assert(m_charAnimeNo <= 12);
 	assert(m_charAnimeNo >= 0);
@@ -169,5 +163,8 @@ void MobEnemies::draw()
 	DrawCircle((int)m_pos.x, (int)m_pos.y, kMobEnemyHitCircleSize, GetColor(0, 255, 255), FALSE);
 #endif
 }
+
+
+
 
 

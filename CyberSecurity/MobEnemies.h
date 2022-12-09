@@ -15,8 +15,8 @@ public:
 	static constexpr int kMobEnemiesGraphicDivNum = kMobEnemiesGraphicDivX * kMobEnemiesGraphicDivY;
 
 	// エフェクトグラフィック
-	static constexpr int kMobEnemiesEffectDivX = 4;
-	static constexpr int kMobEnemiesEffectDivY = 4;
+	static constexpr int kMobEnemiesEffectDivX = 50;
+	static constexpr int kMobEnemiesEffectDivY = 1;
 	static constexpr int kMobEnemiesEffectDivNum = kMobEnemiesEffectDivX * kMobEnemiesEffectDivY;
 
 	MobEnemies();
@@ -43,7 +43,7 @@ public:
 	bool isExist() const { return m_isExist; }
 	void setExist(bool isExist) { m_isExist = isExist; }
 	
-
+	
 
 	// 情報の取得
 	Vec2 getPos() const { return m_pos; }
