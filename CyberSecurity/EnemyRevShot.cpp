@@ -35,7 +35,7 @@ void EnemyRevShot::start(Vec2 pos)
 
 void EnemyRevShot::update()
 {
-	m_pos.x += cosf(m_rad) * kShotSpeed;
+	m_vec.x += cosf(m_rad) * kShotSpeed;
 	m_pos.y += sinf(m_rad) * kShotSpeed;
 	//m_vec *= kShotSpeed;
 
@@ -50,6 +50,11 @@ void EnemyRevShot::update()
 	{
 		m_isExist = false;
 	}
+	// ショットが防衛ラインに当たったとき、存在を消す
+	if (m_pos.y >= DefenseLineEffect::kDefenseLinePosY)
+	{
+		m_isExist = false;
+	}
 }
 // 表示
 void EnemyRevShot::draw()
@@ -57,7 +62,7 @@ void EnemyRevShot::draw()
 	// 弾が存在しなかった場合、ここで処理を終了する
 	if (!m_isExist)return;
 
-	DrawRotaGraph((int)m_pos.x, (int)m_pos.y, 1.0, m_rad, m_handle, true);
+	DrawRotaGraph((int)m_pos.x, (int)m_pos.y, 1.5, m_rad, m_handle, true);
 	// デバッグ
 #if true
 	// ショットの当たり判定

@@ -7,8 +7,6 @@ class SceneGameClear : public SceneBase
 public:
 	SceneGameClear()
 	{
-		m_textPosY = 0;
-		m_textVecY = 0;
 		m_isEnd = false;
 	}
 	virtual ~SceneGameClear() {}
@@ -22,9 +20,22 @@ public:
 
 	virtual bool isEnd() { return m_isEnd; }
 private:
-	// テキスト表示位置変更
-	int m_textPosY;
-	int m_textVecY;
+
+	int m_BackGround;
+
+	// フェードインフラグ
+	bool m_fadeInFlag;
+
+	// フェードアウトフラグ
+	bool m_fadeOutFlag;
+
+	int m_fadeCount;
+
+	int m_text;
+
+	int m_count;
+
+	int m_BGM;
 
 	bool m_isEnd;
 };

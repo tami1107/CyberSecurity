@@ -23,19 +23,18 @@ public:
 	const char* const kPlayerShotGraphic = "data/PlayerShot.png";	// プレイヤーショットのグラフィック
 	const char* const kEnemyShotGraphic = "data/EnemyShot.png";	// プレイヤーショットのグラフィック
 	const char* const kEnemyRevShotGraphic = "data/EnemyShot.png";	// エネミーの回転ショットのグラフィック
-	const char* const kDefenseLineFilename = "data/Path.png";	// 防衛ラインのエフェクト
+	const char* const kDefenseLineFilenameGreen = "data/lineGreen.png";	// 防衛ラインのエフェクト緑色
+	const char* const kDefenseLineFilenameYellow = "data/lineYellow.png";	// 防衛ラインのエフェクト黄色
+	const char* const kDefenseLineFilenameRed = "data/lineRed.png";	// 防衛ラインのエフェクト赤色
+
 
 	// 当たり判定の大きさ
 	static constexpr float kPlayerHitCircleSize = 4;	// プレイヤーの円形の当たり判定の大きさ
-	static constexpr float kEnemyHitCircleSize = 40;	// エネミーの円形の当たり判定の大きさ
+	static constexpr float kEnemyHitCircleSize = 30;	// エネミーの円形の当たり判定の大きさ
 	static constexpr float kMobEnemiesHitCircleSize = 20;	// モブエネミーの円形の当たり判定の大きさ
 	static constexpr float kPlayerShotCircleSize = 5;	// プレイヤーショットの円形の当たり判定の大きさ
 	static constexpr float kEnemyShotCircleSize = 5;	// エネミーショットの円形の当たり判定の大きさ
 	static constexpr float kGrazeCircleSize = 20;		// プレイヤーのグレイズの円形の当たり判定の大きさ
-
-	
-	// エネミーのHP
-	static constexpr int kEnemyHP = 5;
 
 	// 最大数
 	static constexpr int kObjectMax = 128;
@@ -44,6 +43,7 @@ public:
 public:
 	SceneMain();
 	virtual ~SceneMain();
+
 
 	// 初期化
 	virtual	void init() override;;
@@ -67,6 +67,10 @@ public:
 	// プレイヤーとエネミーが接触したかどうか
 	virtual bool playerEnemyCheckHit();
 
+	// プレイヤーがエネミーショットに接触したかどうか
+	virtual bool playerEnemyShotCheckHit();
+
+
 	// プレイヤーの弾がエネミーと接触したかどうか
 	virtual bool pShotEnemyCheckHit();
 	
@@ -87,11 +91,13 @@ private:
 	// プレイヤーのグラフィックハンドル
 	int m_hPlayerGraphic[Player::kPlayerGraphicDivNum];
 	int m_hPlayerEffect[Player::kPlayerEffectDivNum];
+	int m_hPlayerEffect2[Player::kEffectDivNum];
 
+	
 
 	// エネミーのグラフィックハンドル
-	int m_hEnemyGraphic;
-
+	int m_hEnemyGraphic[Enemy::kEnemyGraphicDivNum];
+	int m_hEnemyEffect[Enemy::kEnemyEffectDivNum];
 
 	// モブエネミーのグラフィックハンドル
 	int m_hMobEnemiesGraphic[MobEnemies::kMobEnemiesGraphicDivNum];
@@ -99,28 +105,35 @@ private:
 
 
 	// 防衛ラインのグラフィックハンドル
-	int m_hDefenseLineGraphic[DefenseLineEffect::kDefenseLineEffectDivNum];
-
-
+	int m_hDefenseLineGreenGraphic[DefenseLineEffect::kDefenseLineEffectDivNum];
+	int m_hDefenseLineYellowGraphic[DefenseLineEffect::kDefenseLineEffectDivNum];
+	int m_hDefenseLineRedGraphic[DefenseLineEffect::kDefenseLineEffectDivNum];
 
 	// ショットのグラフィックハンドル
 	int m_hShotGraphic;
 	int m_hEnemyShotGraphic;
 	int m_hEnemyRevShotGraphic;
 
+	// 背景のグラフィックハンドル
+	int m_hBackGround1;
+	int m_hBackGround2;
+	int m_hBoard;
 
 	// カウンター
 	int m_hCount;
 
+	// プレイヤーHP
+	int m_playerHP;
 
 	// エネミーHP
 	int m_enemyHP;
+	int m_maxHP;
 
+
+	// ショットの角度更新
 	float m_angle;
 
-	// エネミーやショットを消す
-	bool m_allDelete;
-
+	bool m_angleflag;
 
 	// すべてのモブエネミーを倒したかどうか
 	bool m_allMobEnemiesKill;
@@ -128,6 +141,74 @@ private:
 	// モブエネミーを倒した数
 	int m_MobKillCount;
 
+
+	// 防衛ラインのカウント
+	int m_DefenseLineCount;
+	
+	// フレームカウント
+	int m_frameCount;
+
+	// プレイヤーがダメージを受けたかの判定
+	bool m_playerDamageFlag;
+
+	// フェードインフラグ
+	bool m_fadeInFlag;
+
+	// フェードアウトフラグ
+	bool m_fadeOutFlag;
+
+	// プレイヤーエフェクト
+	bool m_playerEffect;
+
+	// プレイヤーが倒されたかどうか
+	bool m_playerKillFrag;
+
+	// エネミーが倒されたかどうか
+	bool m_enemyKillFrag;
+
+	// エネミーが動くかどうかの判定
+	bool m_enemyMove;
+
+	// ボス戦に行くためのフラグ
+	bool m_bossFlag;
+
+	// 暗転
+	bool m_ChangeFlag;
+
+	int m_count;
+
+	int m_fadeCount;
+
+	int m_textCount;
+
+	int m_bossText;
+
+	int m_textStop;
+
+	int m_posX;
+
+	int m_playerDamageSound;
+
+	int m_playerDamageSoundCount;
+
+	int m_alarm;
+
+	int m_alarmflag;
+
+	bool m_waitFlag;
+
+	int m_enemyDamageSound;
+
+	int m_DefenseLineSound;
+
+	int m_DefenseLineSound2;
+
+	int m_BGM;
+
+	int m_BossBGM;
+
+	// プレイヤーエフェクトカウンター
+	int m_playerEffectCount;
 	// プレイヤー
 	Player m_player;
 	// エネミー

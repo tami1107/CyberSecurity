@@ -4,12 +4,8 @@
 class SceneTitle : public SceneBase
 {
 public:
-	SceneTitle()
-	{
-		m_textPosY = 0;
-		m_textVecY = 0;
-		m_isEnd = false;
-	}
+	SceneTitle();
+
 	virtual ~SceneTitle() {}
 
 
@@ -21,9 +17,35 @@ public:
 
 	virtual bool isEnd() { return m_isEnd; }
 private:
-	// テキスト表示位置変更
-	int m_textPosY;
-	int m_textVecY;
+	int m_selectNum;
+	
+	int m_Interval;
+
+	int m_BackGround;
+
+	int m_TitleLogo;
+
+	int m_Cursor;
+
+	int m_CursorY;
+
+	int m_fadeCount;
+
+	int m_angle;
+
+	// サウンド
+	int m_decisionSound;
+
+	int m_cursorSound;
+
+	int m_bgm1;
+
+
+	// フェードインフラグ
+	bool m_fadeInFlag;
+
+	// フェードアウトフラグ
+	bool m_fadeOutFlag;
 
 	bool m_isEnd;
 };

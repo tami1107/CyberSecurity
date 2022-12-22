@@ -19,9 +19,13 @@ public:
 	DefenseLineEffect();
 	virtual ~DefenseLineEffect();
 
-	void setEffect(int index, int handle) { m_effect[index] = handle; }
+	void setEffectG(int index, int handle) { m_effectG[index] = handle; }
+	void setEffectY(int index, int handle) { m_effectY[index] = handle; }
+	void setEffectR(int index, int handle) { m_effectR[index] = handle; }
 
 	void setSizeX(int size) { m_sizeX = size; }
+
+	void setColorChange(int num) { m_colorChange = num; }
 
 	// SceneMainを設定
 	void setMain(SceneMain* pMain) { m_pMain = pMain; }
@@ -41,7 +45,9 @@ public:
 private:
 	SceneMain* m_pMain;
 
-	int m_effect[kDefenseLineEffectDivNum];
+	int m_effectG[kDefenseLineEffectDivNum];
+	int m_effectY[kDefenseLineEffectDivNum];
+	int m_effectR[kDefenseLineEffectDivNum];
 
 	int m_sizeX;
 
@@ -53,6 +59,7 @@ private:
 	int m_animeFrame;
 	int m_dirNo;
 
+	int m_colorChange; // 色変更
 
 	// 表示位置
 	Vec2 m_pos;

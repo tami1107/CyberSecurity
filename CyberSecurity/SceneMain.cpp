@@ -3,31 +3,132 @@
 #include "SceneMain.h"
 #include "SceneTitle.h"
 #include "SceneGameClear.h"
+#include "SceneGameOver.h"
+#include "game.h"
+
+namespace
+{
+	// モブエネミー撃退ライン
+	constexpr int kMobEnemiesRepelLine = 20;
+
+	// プレイヤーのHP
+	constexpr int kPlayerHP = 3;
+
+	// エネミーのHP
+	constexpr int kEnemyHP = 100;
+
+	// 防衛ラインの耐久値
+	constexpr int kDefenseLinePoint = 3;
+
+	// 背景１
+	const char* const kBackGround1 = "data/BackGround1.png";
+
+	// 背景２
+	const char* const kBackGround2 = "data/BackGround2.png";
+
+	// ボード
+	const char* const kBoard = "data/Board.png";
+
+	// ボード
+	const char* const kBossText = "data/ボスロゴ.png";
+
+	// HPバーの長さ
+	constexpr int kHPwidth = Game::kScreenWidth - 80;
+
+	// フェードインアウトのスピード
+	constexpr int kFadeSpeed = 5;
+
+	const char* const kPlayerDamageSound = "bgm/プレイヤーダメージ.wav";
+
+	const char* const kAlarmSound = "bgm/アラーム.mp3";
+
+	const char* const kEnemyDamageSound = "bgm/エネミーダメージ.wav";
+
+	const char* const kDefenseLineSound = "bgm/防衛ライン音.wav";
+
+	const char* const kDefenseLineSound2 = "bgm/警告音.mp3";
+
+	const char* const kBgm1 = "bgm/モブエネミーBGM.wav";
+
+	const char* const kBgm2 = "bgm/ボスエネミーBGM.mp3";
+}
 
 
 SceneMain::SceneMain() :
 	// グラフィック
 	m_hShotGraphic(-1),		// ショットのグラフィック
-	m_hEnemyGraphic(-1),	// エネミーのグラフィック
 	m_hEnemyShotGraphic(-1),// エネミーのショットのグラフィック
 	m_hEnemyRevShotGraphic(-1),	// エネミーの回転ショットのグラフィック
-
-	// エネミーやショットを消す
-	m_allDelete(false),
+	m_hBackGround1(-1), // 背景のグラフィック
+	m_hBackGround2(-1),
 
 	// すべてのモブエネミーを倒したかどうか
 	m_allMobEnemiesKill(false),
 
 	// モブエネミーを倒した数
-	m_MobKillCount(),
+	m_MobKillCount(0),
 
-	// ショットの角度
-	m_angle(),
+	// ショットの角度更新
+	m_angle(10),
+
 	// カウンター
 	m_hCount(0),
-	
+
+	// 防衛ラインのカウント
+	m_DefenseLineCount(kDefenseLinePoint),
+
+	// プレイヤーHP
+	m_playerHP(kPlayerHP),
 	// エネミーのHP
-	m_enemyHP(kEnemyHP)	
+	m_enemyHP(kEnemyHP),
+	m_maxHP(kEnemyHP),
+
+	// フレームカウント
+	m_frameCount(0),
+
+	// プレイヤーがダメージを受けたかどうかの判定
+	m_playerDamageFlag(false),
+
+	// フェードインフラグ
+	m_fadeInFlag(true),
+	// フェードアウトフラグ
+	m_fadeOutFlag(false),
+	// プレイヤーエフェクト
+	m_playerEffect(false),
+	// プレイヤーが倒されたかどうか
+	m_playerKillFrag(false),
+	// エネミーが倒されたかどうか
+	m_enemyKillFrag(false),
+	// エネミーが動くかどうかの判定
+	m_enemyMove(false),
+	// ボス戦に行くためのフラグ
+	m_bossFlag(false),
+	m_count(0),
+	// 暗転
+	m_ChangeFlag(false),
+	m_fadeCount(0),
+
+	m_textCount(0),
+
+	m_bossText(-1),
+
+	m_textStop(0),
+
+	m_posX(0),
+
+	m_playerDamageSound(),
+	m_playerDamageSoundCount(0),
+	// プレイヤーエフェクトカウンター
+	m_playerEffectCount(0),
+	m_alarm(),
+	m_alarmflag(0),
+	m_waitFlag(true),
+	m_angleflag(false),
+	m_enemyDamageSound(),
+	m_DefenseLineSound(),
+	m_DefenseLineSound2(),
+	m_BGM(),
+	m_BossBGM()
 {
 	// プレイヤーのグラフィック
 	for (auto& handle : m_hPlayerGraphic)
@@ -39,13 +140,36 @@ SceneMain::SceneMain() :
 	{
 		handle = -1;
 	}
+	// プレイヤーのエフェクト
+	for (auto& handle : m_hPlayerEffect2)
+	{
+		handle = -1;
+	}
+	// エネミーのグラフィック
+	for (auto& handle : m_hEnemyGraphic)
+	{
+		handle = -1;
+	}
+	// エネミーのエフェクト
+	for (auto& handle : m_hEnemyEffect)
+	{
+		handle = -1;
+	}
 	// モブエネミー
 	for (auto& handle : m_hMobEnemiesGraphic)
 	{
 		handle = -1;
 	}
 	// 防衛ラインのグラフィック
-	for (auto& handle : m_hDefenseLineGraphic)
+	for (auto& handle : m_hDefenseLineGreenGraphic)
+	{
+		handle = -1;
+	}
+	for (auto& handle : m_hDefenseLineYellowGraphic)
+	{
+		handle = -1;
+	}
+	for (auto& handle : m_hDefenseLineRedGraphic)
 	{
 		handle = -1;
 	}
@@ -74,6 +198,11 @@ void SceneMain::init()
 	int pEffectG = LoadGraph(kPlayerEffectFilename);
 	GetGraphSize(pEffectG, &pEffectW, &pEffectH);
 
+	// モブエネミーエフェクトのグラフィックサイズを取得
+	int pEffect2W = {};
+	int pEffect2H = {};
+	int pEffect2G = LoadGraph(kMobEnemiesEffectFilename);
+	GetGraphSize(pEffect2G, &pEffect2W, &pEffect2H);
 
 	// m_hPlayerGraphicの中にプレイヤーの画像を入れる
 	LoadDivGraph(kPlayerGraphicFilename, Player::kPlayerGraphicDivNum,
@@ -84,6 +213,12 @@ void SceneMain::init()
 	LoadDivGraph(kPlayerEffectFilename, Player::kPlayerEffectDivNum,
 		Player::kPlayerEffectDivX, Player::kPlayerEffectDivY,
 		pEffectW / Player::kPlayerEffectDivX, pEffectH / Player::kPlayerEffectDivY, m_hPlayerEffect);
+
+
+	// m_hPlayerEffectの中にプレイヤーの画像を入れる
+	LoadDivGraph(kMobEnemiesEffectFilename, Player::kEffectDivNum,
+		Player::kEffectDivX, Player::kEffectDivY,
+		pEffect2W / Player::kEffectDivX, pEffect2H / Player::kEffectDivY, m_hPlayerEffect2);
 
 
 	m_player.setMain(this);
@@ -101,6 +236,11 @@ void SceneMain::init()
 		m_player.setEffect(i, m_hPlayerEffect[i]);
 	}
 
+	// player.hにプレイヤーエフェクト2の画像を送る
+	for (int i = 0; i < Player::kEffectDivNum; i++)
+	{
+		m_player.setEffect2(i, m_hPlayerEffect2[i]);
+	}
 
 	m_player.init();// m_playerのinit(初期設定)を行う
 	
@@ -108,10 +248,41 @@ void SceneMain::init()
 	//////////////////////////////////////////
 	//				エネミー
 	//////////////////////////////////////////
+	// エネミーのグラフィックサイズを取得
+	int EnemyW = {};
+	int EnemyH = {};
+	int EnemyG = LoadGraph(kMobEnemiesGraphicFilename);
+	GetGraphSize(EnemyG, &EnemyW, &EnemyH);
 
-	m_hEnemyGraphic = LoadGraph(kEnemyGraphic);	// m_hEnemyGraphicの中にkEnemyGraphic(エネミーの画像)を入れる
+
+	// エネミーエフェクトのグラフィックサイズを取得
+	int eEffectW = {};
+	int eEffectH = {};
+	int eEffectG = LoadGraph(kMobEnemiesEffectFilename);
+	GetGraphSize(eEffectG, &eEffectW, &eEffectH);
+
+	// m_hEnemyGraphicの中にモブエネミーの画像を入れる
+	LoadDivGraph(kMobEnemiesGraphicFilename, Enemy::kEnemyGraphicDivNum,
+		Enemy::kEnemyGraphicDivX, Enemy::kEnemyGraphicDivY,
+		EnemyW / Enemy::kEnemyGraphicDivX, EnemyH / Enemy::kEnemyGraphicDivY, m_hEnemyGraphic);
+
+	// m_hMobEnemiesGraphicの中にモブエネミーのエフェクトを入れる
+	LoadDivGraph(kMobEnemiesEffectFilename, Enemy::kEnemyEffectDivNum,
+		Enemy::kEnemyEffectDivX, Enemy::kEnemyEffectDivY,
+		eEffectW / Enemy::kEnemyEffectDivX, eEffectH / Enemy::kEnemyEffectDivY, m_hEnemyEffect);
+
 	m_enemy.setMain(this);
-	m_enemy.setHandle(m_hEnemyGraphic);// SceneEnemyにkEnemyGraphic(エネミーの画像)を送る
+
+	//  エネミーの画像を送る
+	for (int i = 0; i < Enemy::kEnemyGraphicDivNum; i++)
+	{
+		m_enemy.setHandle(i, m_hEnemyGraphic[i]);
+	}
+	//  エネミーのエフェクトを送る
+	for (int i = 0; i < Enemy::kEnemyEffectDivNum; i++)
+	{
+		m_enemy.setEffect(i, m_hEnemyEffect[i]);
+	}
 	m_enemy.init();// m_enemyのinit(初期設定)を行う
 
 
@@ -153,7 +324,7 @@ void SceneMain::init()
 	{
 		for (auto& mobObject : m_mobEnemy)
 		{
-		mobObject.setHandle(i, m_hMobEnemiesGraphic[i]);
+			mobObject.setHandle(i, m_hMobEnemiesGraphic[i]);
 		}
 	}
 
@@ -206,26 +377,61 @@ void SceneMain::init()
 	// 防衛ラインのグラフィックサイズを取得
 	int DefenseLineW = {};
 	int DefenseLineH = {};
-	int DefenseLineG = LoadGraph(kDefenseLineFilename);
-	GetGraphSize(DefenseLineG, &DefenseLineW, &DefenseLineH);
+	int DefenseLineGreenG = LoadGraph(kDefenseLineFilenameGreen);
+	GetGraphSize(DefenseLineGreenG, &DefenseLineW, &DefenseLineH);
 
-	// m_hDefenseLineGraphicの中にモブエネミーの画像を入れる
-	LoadDivGraph(kDefenseLineFilename, DefenseLineEffect::kDefenseLineEffectDivNum,
+	// m_hDefenseLineGraphicGreenの中に防衛ラインの画像を入れる
+	LoadDivGraph(kDefenseLineFilenameGreen, DefenseLineEffect::kDefenseLineEffectDivNum,
 		DefenseLineEffect::kDefenseLineEffectDivX, DefenseLineEffect::kDefenseLineEffectDivY,
 		DefenseLineW / DefenseLineEffect:: kDefenseLineEffectDivX, DefenseLineH / DefenseLineEffect::kDefenseLineEffectDivY,
-		m_hDefenseLineGraphic);
+		m_hDefenseLineGreenGraphic);
+
+	// m_hDefenseLineGraphicYellowの中に防衛ラインの画像を入れる
+	LoadDivGraph(kDefenseLineFilenameYellow, DefenseLineEffect::kDefenseLineEffectDivNum,
+		DefenseLineEffect::kDefenseLineEffectDivX, DefenseLineEffect::kDefenseLineEffectDivY,
+		DefenseLineW / DefenseLineEffect::kDefenseLineEffectDivX, DefenseLineH / DefenseLineEffect::kDefenseLineEffectDivY,
+		m_hDefenseLineYellowGraphic);
+
+	// m_hDefenseLineGraphicRedの中に防衛ラインの画像を入れる
+	LoadDivGraph(kDefenseLineFilenameRed, DefenseLineEffect::kDefenseLineEffectDivNum,
+		DefenseLineEffect::kDefenseLineEffectDivX, DefenseLineEffect::kDefenseLineEffectDivY,
+		DefenseLineW / DefenseLineEffect::kDefenseLineEffectDivX, DefenseLineH / DefenseLineEffect::kDefenseLineEffectDivY,
+		m_hDefenseLineRedGraphic);
 
 	// 防衛ラインにすべての画像を入れる
 	for (int i = 0; i < DefenseLineEffect::kDefenseLineEffectDivNum; i++)
 	{
-		m_DefenseLine.setEffect(i, m_hDefenseLineGraphic[i]);
+		m_DefenseLine.setEffectG(i, m_hDefenseLineGreenGraphic[i]);
+		m_DefenseLine.setEffectY(i, m_hDefenseLineYellowGraphic[i]);
+		m_DefenseLine.setEffectR(i, m_hDefenseLineRedGraphic[i]);
 	}
 
 	m_DefenseLine.setSizeX(DefenseLineW / DefenseLineEffect::kDefenseLineEffectDivX);
 
 	m_DefenseLine.init();// m_DefenseLineのinit(初期設定)を行う
 
+	//////////////////////////////////////////
+	//		   　背景のグラフィック
+	//////////////////////////////////////////
 
+	m_hBackGround1 = LoadGraph(kBackGround1);
+	m_hBackGround2 = LoadGraph(kBackGround2);
+	m_hBoard = LoadGraph(kBoard);
+	m_bossText = LoadGraph(kBossText);
+
+	m_playerDamageSound = LoadSoundMem(kPlayerDamageSound);
+
+	m_alarm = LoadSoundMem(kAlarmSound);
+
+	m_enemyDamageSound = LoadSoundMem(kEnemyDamageSound);
+
+	m_DefenseLineSound = LoadSoundMem(kDefenseLineSound);
+
+	m_DefenseLineSound2 = LoadSoundMem(kDefenseLineSound2); 
+
+	m_BGM = LoadSoundMem(kBgm1);
+
+	m_BossBGM = LoadSoundMem(kBgm2);
 }
 
 // 終了処理
@@ -242,7 +448,11 @@ void SceneMain::end()
 		DeleteGraph(handle);
 	}
 
-	DeleteGraph(m_hEnemyGraphic);	// エネミーのグラフィックを削除する
+	// エネミーのグラフィックを削除する
+	for (auto& handle : m_hEnemyGraphic)
+	{
+		DeleteGraph(handle);	
+	}
 
 	// モブエネミーのグラフィックを削除する
 	for (auto& handle : m_hMobEnemiesGraphic)
@@ -256,7 +466,7 @@ void SceneMain::end()
 	}
 
 	// 防衛ラインのグラフィックを削除する
-	for (auto& handle : m_hDefenseLineGraphic)
+	for (auto& handle : m_hDefenseLineGreenGraphic)
 	{
 		DeleteGraph(handle);
 	}
@@ -268,35 +478,73 @@ void SceneMain::end()
 // 毎フレームの処理
 SceneBase* SceneMain::update()
 {
-	m_hCount++;
-
-	if (m_hCount >= 60)
+	if (m_fadeInFlag == true)
 	{
-		// モブエネミーのinit(初期設定)を行う
-		for (auto& mobObject : m_mobEnemy)
+		
+		m_fadeCount += kFadeSpeed;
+		if (m_fadeCount >= 255)
 		{
-			if (!mobObject.isExist())
-			{
-				mobObject.init();
-				m_hCount = 0;
-				break;
-			}
+			m_fadeCount = 255;
+			m_fadeInFlag = false;
+		}
+		
+	}
+	if (m_fadeOutFlag == true)
+	{
+		m_fadeCount -= kFadeSpeed;
+		if (m_fadeCount <= 0)
+		{
+			m_fadeCount = 0;
+			m_fadeOutFlag = false;
 		}
 	}
 
 
-	// プレイヤー処理のアップデート
-	m_player.update();
-	// エネミー処理のアップデート
-	//m_enemy.update();
-	
-
-	// モブエネミー処理のアップデート
-	for (auto& mobObject : m_mobEnemy)
+	if (!m_playerHP == 0)
 	{
-		mobObject.update();
+		// プレイヤー処理のアップデート
+		m_player.update();
+
 	}
 
+	// モブエネミーを撃退ラインまで倒していないとき
+	if (m_allMobEnemiesKill == false)
+	{
+		m_hCount++;
+
+		if (m_hCount >= 60)
+		{
+			// モブエネミーのinit(初期設定)を行う
+			for (auto& mobObject : m_mobEnemy)
+			{
+				if (!mobObject.isExist())
+				{
+					mobObject.init();
+					m_hCount = 0;
+					break;
+				}
+			}
+		}
+		// モブエネミー処理のアップデート
+		for (auto& mobObject : m_mobEnemy)
+		{
+			mobObject.update();
+		}
+	}
+	
+	if (m_enemyMove == true)
+	{
+		if (m_textCount >= 800)
+		{
+
+			if (m_enemyKillFrag == false)
+			{
+				m_enemy.update();
+			}
+		}
+	}
+
+	
 	// プレイヤーのすべてのショットのアップデート
 	for (auto& shot : m_shot)
 	{
@@ -318,62 +566,41 @@ SceneBase* SceneMain::update()
 	// m_DefenseLineのアップデート
 	m_DefenseLine.update();	
 
+
+	if (m_count == 0)
+	{
+		if (m_allMobEnemiesKill == true)
+		{
+			DeleteSoundMem(m_BGM);
+			m_alarmflag = 1;
+			m_fadeOutFlag = true;
+			if (m_fadeCount == 0)
+			{
+
+				m_ChangeFlag = true;
+				m_count = 1;
+			}
+		}
+	}
+	if(m_count == 1)
+	{
+		
+		m_fadeInFlag = true;
+		if (m_fadeCount == 255)
+		{
+			
+			m_enemyMove = true;
+			m_count = 2;
+		}
+		
+
+	}
 	//////////////////////////////////////////
 	//				当たり判定
 	//////////////////////////////////////////
 
-	// プレイヤーとエネミーが接触した場合、タイトルにもどる
-	if (playerEnemyCheckHit())
-	{
-		// Titleに切り替え
-		return(new SceneTitle);
-	}
-
-	// プレイヤーのショットがモブエネミーに当たった場合の処理
-	if (pShotMobCheckHit())
-	{
-	
-	}
-
-	// プレイヤーのショットがエネミーに当たった場合の処理
-	if (pShotEnemyCheckHit())
-	{
-		// エネミーのHPを減らす
-		m_enemyHP--;
-
-		// エネミーのHPが0以下のとき
-		if (m_enemyHP <= 0)
-		{
-			// Titleに切り替え
-			return(new SceneTitle);
-		}
-	}
-
-	// モブエネミーのショットがプレイヤーに当たった場合の処理
-	if (playerMobShotCheckHit())
-	{
-		// エネミーやショットを消す
-		m_allDelete = true;
-	}
-	
-
-	// プレイヤーがモブエネミーに接触したかどうか
-	if (playerMobCheckHit())
-	{
-		// エネミーやショットを消す
-		m_allDelete = true;
-	}
-
-	// モブエネミーが防衛ラインに当たった場合の処理
-	if (MobDefenseLineCheckHit())
-	{
-		// エネミーやショットを消す
-		m_allDelete = true;
-		//return(new SceneGameClear);
-	}
-	
-	// エネミーやショットを消す
-	if (m_allDelete == true)
+	// モブエネミーを撃退ラインまで倒したとき
+	if (m_MobKillCount >= kMobEnemiesRepelLine)
 	{
 		// モブエネミーをすべて消す
 		for (auto& mobObject : m_mobEnemy)
@@ -385,10 +612,205 @@ SceneBase* SceneMain::update()
 		{
 			mobShot.setExist(false);
 		}
-		// 消す処理が終わった後、falseに戻す
-		m_allDelete = false;
+		m_allMobEnemiesKill = true;
 	}
 
+	// モブエネミーを撃退ラインまで倒していないとき
+	if (m_allMobEnemiesKill == false)
+	{
+		if (CheckSoundMem(m_BGM) == 0)
+		{
+			PlaySoundMem(m_BGM, DX_PLAYTYPE_BACK);
+		}
+
+
+
+
+
+
+		if (m_playerDamageFlag == false)
+		{
+			// プレイヤーのショットがモブエネミーに当たった場合の処理
+			if (pShotMobCheckHit())
+			{
+				m_MobKillCount++;
+			}
+
+			// プレイヤーにモブエネミーのショットが当たった場合の処理
+			if (playerMobShotCheckHit())
+			{
+				// プレイヤーのHPを減らす
+				m_playerHP--;
+				m_playerDamageSoundCount = 1;
+				
+				// プレイヤーがダメージを受けたかの判定
+				m_playerDamageFlag = true;
+
+				// モブエネミーをすべて消す
+				for (auto& mobObject : m_mobEnemy)
+				{
+					mobObject.setExist(false);
+				}
+				// モブエネミーのショットをすべて消す
+				for (auto& mobShot : m_EnemyShot)
+				{
+					mobShot.setExist(false);
+				}
+			}
+
+			// プレイヤーがモブエネミーに接触したかどうか
+			if (playerMobCheckHit())
+			{
+				// プレイヤーのHPを減らす
+				m_playerHP--;
+				m_playerDamageSoundCount = 1;
+				
+				// プレイヤーがダメージを受けたかの判定
+				m_playerDamageFlag = true;
+
+				// モブエネミーをすべて消す
+				for (auto& mobObject : m_mobEnemy)
+				{
+					mobObject.setExist(false);
+				}
+				// モブエネミーのショットをすべて消す
+				for (auto& mobShot : m_EnemyShot)
+				{
+					mobShot.setExist(false);
+				}
+			}
+
+			// モブエネミーが防衛ラインに当たった場合の処理
+			if (MobDefenseLineCheckHit())
+			{
+				PlaySoundMem(m_DefenseLineSound, DX_PLAYTYPE_BACK);
+				// ディフェンスラインカウントを減らす
+				m_DefenseLineCount--;
+
+				m_DefenseLine.setColorChange(m_DefenseLineCount);
+
+
+				if (m_DefenseLineCount == 1)
+				{
+					PlaySoundMem(m_DefenseLineSound2, DX_PLAYTYPE_BACK);
+				}
+				// モブエネミーをすべて消す
+				for (auto& mobObject : m_mobEnemy)
+				{
+					mobObject.setExist(false);
+				}
+				// モブエネミーのショットをすべて消す
+				for (auto& mobShot : m_EnemyShot)
+				{
+					mobShot.setExist(false);
+				}
+			}
+
+		}
+
+	}
+	
+	
+	if (m_enemyMove == true)
+	{
+		if (CheckSoundMem(m_BossBGM) == 0)
+		{
+			PlaySoundMem(m_BossBGM, DX_PLAYTYPE_BACK);
+		}
+
+		if (m_playerDamageFlag == false && m_enemyKillFrag == false)
+		{
+			if (m_textCount >= 800)
+			{
+
+				// プレイヤーとエネミーが接触した場合の処理
+				if (playerEnemyCheckHit())
+				{
+					// プレイヤーのHPを減らす
+					m_playerHP--;
+					m_playerDamageSoundCount = 1;
+					// プレイヤーがダメージを受けたかの判定
+					m_playerDamageFlag = true;
+
+					// エネミーのショットをすべて消す
+					for (auto& Shot : m_EnemyRevShot)
+					{
+						Shot.setExist(false);
+					}
+				}
+				// プレイヤーがエネミーショットに接触場合の処理
+				if (playerEnemyShotCheckHit())
+				{
+					// プレイヤーのHPを減らす
+					m_playerHP--;
+					m_playerDamageSoundCount = 1;
+					// プレイヤーがダメージを受けたかの判定
+					m_playerDamageFlag = true;
+					// エネミーのショットをすべて消す
+					for (auto& Shot : m_EnemyRevShot)
+					{
+						Shot.setExist(false);
+					}
+				}
+
+				// プレイヤーのショットがエネミーに当たった場合の処理
+				if (pShotEnemyCheckHit())
+				{
+					// エネミーのHPを減らす
+					m_enemyHP--;
+					PlaySoundMem(m_enemyDamageSound, DX_PLAYTYPE_BACK);
+					// エネミーのHPが0以下のとき
+					if (m_enemyHP <= 0)
+					{
+						m_enemyKillFrag = true;
+					}
+				}
+			}
+
+		}
+	}
+
+	// プレイヤーのHPが0になったときの処理
+	if (m_playerHP <= 0 || m_DefenseLineCount<=0)
+	{
+		if (m_waitFlag == true)
+		{
+			WaitTimer(500);
+
+			m_waitFlag = false;
+		}
+
+		m_fadeOutFlag = true;
+		
+		m_playerKillFrag = true;
+
+		if (m_fadeCount == 0)
+		{
+			DeleteSoundMem(m_BGM);
+			DeleteSoundMem(m_BossBGM);
+			// ゲームオーバーシーンに移行
+			return(new SceneGameOver);
+		}
+	}
+
+	// エネミーを倒した時の処理
+	if (m_enemyKillFrag == true)
+	{
+		if (m_waitFlag == true)
+		{
+			WaitTimer(500);
+
+			m_waitFlag = false;
+		}
+		m_fadeOutFlag = true;
+
+		if (m_fadeCount <= 20)
+		{
+			DeleteSoundMem(m_BossBGM);
+			// ゲームクリアシーンに移行
+			return(new SceneGameClear);
+		}
+	}
 
 	return this;
 }
@@ -396,7 +818,63 @@ SceneBase* SceneMain::update()
 // 毎フレームの描画
 void SceneMain::draw()
 {
+	
+	// フェード
+	SetDrawBright(m_fadeCount, m_fadeCount, m_fadeCount);
 
+	// 背景の表示
+	DrawGraph(0, 0, m_hBackGround2, true);
+	// ボードの表示
+	DrawGraph(0, 0, m_hBoard, FALSE);
+	//エネミーのHPバー
+	DrawLine(38, 20, 38 + kHPwidth, 20, GetColor(255, 0, 0), FALSE);//メーターの枠を描画
+	DrawLine(38, 20, 38 + kHPwidth * m_enemyHP / m_maxHP, 20, GetColor(0, 255, 0), false);//メーターの中身を描画
+	// エネミーのHP表示
+	DrawFormatString(8, 20, GetColor(255, 255, 255), "enemyHP:%d/%d", m_enemyHP, kEnemyHP);
+	// プレイヤーのHP表示
+	DrawFormatString(8, 37, GetColor(255, 255, 255), "playerHP:%d/%d", m_playerHP, kPlayerHP);
+	
+
+
+	if (m_enemyKillFrag)
+	{
+		m_enemy.effect();
+	}
+	else
+	{
+		// エネミーの表示
+		m_enemy.draw();
+	}
+
+	// モブエネミーを撃退ラインまで倒していないとき
+	if (m_ChangeFlag == false)
+	{
+		
+		// 背景の表示
+		DrawGraph(0, 0, m_hBackGround1, FALSE);
+
+		// ボードの表示
+		DrawGraph(0, 0, m_hBoard, FALSE);
+		// モブエネミーキル数
+		DrawFormatString(8,15, GetColor(255, 255, 255), "モブエネミーキル数:%d/%d", m_MobKillCount, kMobEnemiesRepelLine);
+		// プレイヤーのHP表示
+		DrawFormatString(8, 32, GetColor(255, 255, 255), "playerHP:%d/%d", m_playerHP, kPlayerHP);
+		// ディフェンスラインの耐久値
+		DrawFormatString(8,50, GetColor(255, 255, 255), "防衛ラインの耐久値:%d/%d", 
+			m_DefenseLineCount, kDefenseLinePoint);
+
+		for (auto& mobObject : m_mobEnemy)
+		{
+			if (!mobObject.isExist())
+			{
+				mobObject.effect();
+			}
+		// モブエネミーの表示
+			mobObject.draw();
+		}
+		
+	}
+	
 	// プレイヤーのショットの表示
 	for (auto& shot : m_shot)
 	{
@@ -415,26 +893,84 @@ void SceneMain::draw()
 		shot.draw();
 	}
 
-	// プレイヤーの表示
-	m_player.draw();
-	// エネミーの表示
-	m_enemy.draw();
-	for (auto& mobObject : m_mobEnemy)
+	// プレイヤーの点滅表示
+	if (m_playerDamageFlag == true)
 	{
-	// モブエネミーの表示
-		mobObject.draw();
+		if (m_playerKillFrag)
+		{
+			
+			m_player.effect();
+		}
+		else
+		{
+			m_frameCount++;
+			if (m_frameCount == 10 || m_frameCount == 20 || m_frameCount == 30 || m_frameCount == 40 || m_frameCount == 50)
+			{
+				m_player.draw();
+			}
+			if (m_frameCount >= 60)
+			{
+				m_playerDamageFlag = false;
+
+				m_frameCount = 0;
+			}
+		}
+
 	}
+	else
+	{
+		// プレイヤーの表示
+		m_player.draw();
+	}
+
+	if (m_playerDamageSoundCount == 1)
+	{
+		PlaySoundMem(m_playerDamageSound, DX_PLAYTYPE_BACK);
+		if (m_playerHP == 1)
+		{
+			PlaySoundMem(m_DefenseLineSound2, DX_PLAYTYPE_BACK);
+		}
+
+		m_playerDamageSoundCount = 0;
+	}
+
 
 	// m_DefenseLineの描画
 	m_DefenseLine.draw();
 
-	// デバッグ
-#if false
-	// 角度の取得
-	DrawFormatString(0, 45, GetColor(255, 255, 255), "角度=%f", m_angle);
-	// エネミーのHP表示
-	DrawFormatString(0, 0, GetColor(255, 255, 255), "enemyHP:%d", m_enemyHP);
-#endif
+	if (m_ChangeFlag == true)
+	{
+	
+	
+		if (m_textCount <= 1000)
+		{
+			
+			if (m_textCount == 400)
+			{
+				m_textStop++;
+				if (m_textStop >= 30)
+				{
+					m_textCount = 401;
+					m_textStop = 0;
+				}
+			}
+			else
+			{
+				m_textCount+=8;
+			}
+			
+			// ボスロゴの表示
+			DrawRotaGraph(m_textCount, 250, 1.0f, 0, m_bossText, TRUE);
+		}
+	}
+
+	if (m_alarmflag == 1)
+	{
+		PlaySoundMem(m_alarm, DX_PLAYTYPE_BACK);
+		m_alarmflag = 0;
+	}
+
+
 }
 
 // プレイヤーがショットを打つ
@@ -486,8 +1022,26 @@ bool SceneMain::createEnemyRevShot(Vec2 pos)
 			// ショットを打つ
 			shot.start(Vec2(pos));
 
-			if (m_angle >= 350) m_angle = 0;
-			else m_angle += 10.0;
+			if (m_angle <= 10)
+			{
+				m_angleflag = true;
+			}
+			else if (m_angle >= 170)
+			{
+				m_angleflag = false;
+			}
+
+			if (m_angleflag == true)
+			{
+				m_angle += 10.0;
+			}
+			else
+			{
+				m_angle -= 10.0;
+			}
+
+			//if (m_angle >= 350) m_angle = 0;
+			//else m_angle += 10.0;
 
 			return true;
 		}
@@ -513,6 +1067,34 @@ bool SceneMain::playerEnemyCheckHit()
 		return true;
 	}
 	// プレイヤーとエネミーが接触していないとき
+	return false;
+}
+
+// プレイヤーがエネミーのショットに接触したかどうか
+bool SceneMain::playerEnemyShotCheckHit()
+{
+	// すべてのエネミーのショットを見る
+	for (auto& shot : m_EnemyRevShot)
+	{
+		// エネミーのしょっとが存在するとき
+		if (shot.isExist())
+		{
+			// 円形の当たり判定
+			float dx = shot.getPos().x - m_player.getPos().x;
+			float dy = shot.getPos().y - m_player.getPos().y;
+			float dr = dx * dx + dy * dy;// A²＝B²＋C²
+
+			float ar = kPlayerHitCircleSize + kEnemyShotCircleSize;// 当たり判定の大きさ
+			float dl = ar * ar;
+
+			// プレイヤーとエネミーが当たったとき
+			if (dr < dl)
+			{
+				return true;
+			}
+		}
+	}
+	// プレイヤーとモブエネミーが当たっていないとき
 	return false;
 }
 
@@ -645,29 +1227,29 @@ bool SceneMain::MobDefenseLineCheckHit()
 // プレイヤーの弾がエネミーが接触したかどうか
 bool SceneMain::pShotEnemyCheckHit()
 {
-	//for (auto& shot : m_shot)
-	//{
-	//	// 弾が存在するとき
-	//	if (shot.isExist())
-	//	{
-	//		// 円形の当たり判定
-	//		float dx = shot.getPos().x - m_enemy.getPos().x;
-	//		float dy = shot.getPos().y - m_enemy.getPos().y;
-	//		float dr = dx * dx + dy * dy;// A²＝B²＋C²
+	for (auto& shot : m_shot)
+	{
+		// 弾が存在するとき
+		if (shot.isExist())
+		{
+			// 円形の当たり判定
+			float dx = shot.getPos().x - m_enemy.getPos().x;
+			float dy = shot.getPos().y - m_enemy.getPos().y;
+			float dr = dx * dx + dy * dy;// A²＝B²＋C²
 
-	//		float ar = kPlayerShotCircleSize + kEnemyHitCircleSize;// 当たり判定の大きさ
-	//		float dl = ar * ar;
+			float ar = kPlayerShotCircleSize + kEnemyHitCircleSize;// 当たり判定の大きさ
+			float dl = ar * ar;
 
-	//		if (dr < dl)
-	//		{
-	//			// エネミーに当たったショットを消す
-	//			shot.setExist(false);
-	//			// エネミーにプレイヤーの弾が当たったとき
-	//			return true;
-	//		}
-	//	}
-	//}
-	//// エネミーにプレイヤーの弾は当たっていないとき
+			if (dr < dl)
+			{
+				// エネミーに当たったショットを消す
+				shot.setExist(false);
+				// エネミーにプレイヤーの弾が当たったとき
+				return true;
+			}
+		}
+	}
+	// エネミーにプレイヤーの弾は当たっていないとき
 	return false;
 }
 

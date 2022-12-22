@@ -2,7 +2,6 @@
 #include <cassert>
 
 #include "SceneTitle.h"
-#include "SceneMain.h"
 
 
 SceneManager::SceneManager()

@@ -39,6 +39,9 @@ public:
 	// 描画
 	void draw();
 
+	// エフェクト処理
+	void effect();
+
 	// 存在するか
 	bool isExist() const { return m_isExist; }
 	void setExist(bool isExist) { m_isExist = isExist; }
@@ -56,14 +59,13 @@ private:
 	int m_handle[kMobEnemiesGraphicDivNum];
 	int m_effect[kMobEnemiesEffectDivNum];
 
-	// ショットの発生間隔
-	int m_shotInterval;
+
 
 	// フレーム数をカウントする
 	int m_frameCount;
 
-	// 回数をカウントする
-	int m_memberCount;
+	// ショットのフラグ
+	bool m_shotFlag;
 
 	// キャラクターのアニメーション
 	int m_charAnimeNo;	// 表示する番号
@@ -74,6 +76,12 @@ private:
 	int m_effectAnimeNo;	// 表示する番号
 	int m_effectAnimeFrame;
 	int m_effectDirNo;
+
+	int m_shotSound;
+
+	int m_bombSound;
+
+	int m_count;
 
 	// 存在フラグ
 	bool m_isExist;
