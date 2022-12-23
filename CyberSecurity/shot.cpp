@@ -57,7 +57,7 @@ void Shot::draw()
 	// 弾の表示
 	DrawRotaGraph((int)m_pos.x, (int)m_pos.y, 1.0, 0.0, m_handle, true);
 	// デバッグ
-#if true
+#if false
 	// ショットの当たり判定
 	DrawCircle((int)m_pos.x, (int)m_pos.y, kPlayerShotCircleSize, GetColor(255, 0, 0), FALSE);
 #endif

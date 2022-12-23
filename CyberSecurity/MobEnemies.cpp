@@ -151,13 +151,13 @@ void MobEnemies::draw()
 
 	// モブエネミーの表示(座標の中心に画像を表示する)
 	DrawRotaGraph(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
-		1.0, 0.0, m_handle[m_charAnimeNo], true);
+		1.5, 0.0, m_handle[m_charAnimeNo], true);
 
 	assert(m_charAnimeNo <= 12);
 	assert(m_charAnimeNo >= 0);
 
 	// デバッグ
-#if true
+#if false
 	// モブエネミーの当たり判定の大きさ
 	DrawCircle((int)m_pos.x, (int)m_pos.y, kMobEnemyHitCircleSize, GetColor(0, 255, 255), FALSE);
 #endif

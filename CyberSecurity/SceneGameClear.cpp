@@ -106,5 +106,6 @@ void SceneGameClear::draw()
 
 	DrawRotaGraph(400, 300, m_count * 0.1, 0, m_text, TRUE);
 	
-	
+	// 文字列の描画
+	DrawString(10, 0, "Zキー、または1ボタンでタイトルに戻る", 0xffffff);
 }

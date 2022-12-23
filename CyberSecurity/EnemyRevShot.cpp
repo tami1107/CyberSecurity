@@ -64,7 +64,7 @@ void EnemyRevShot::draw()
 
 	DrawRotaGraph((int)m_pos.x, (int)m_pos.y, 1.5, m_rad, m_handle, true);
 	// デバッグ
-#if true
+#if false
 	// ショットの当たり判定
 	DrawCircle((float)m_pos.x, (float)m_pos.y, kPlayerShotCircleSize, GetColor(255, 0, 0), FALSE);
 #endif

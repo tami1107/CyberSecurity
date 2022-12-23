@@ -3,6 +3,7 @@
 #include "SceneTitle.h"
 #include "SceneMain.h"
 #include "game.h"
+#include "SceneExplanation.h"
 
 namespace
 {
@@ -77,6 +78,8 @@ void SceneTitle::init()
 
 	m_angle = 0;
 
+	m_count = 0;
+
 	// フェードインフラグ
 	m_fadeInFlag = true;
 
@@ -118,7 +121,7 @@ SceneBase* SceneTitle::update()
 	{
 		int padState = GetJoypadInputState(DX_INPUT_KEY_PAD1);
 	
-		if (m_fadeOutFlag == false)
+		if (m_count == 0)
 		{
 			// 計算フェーズ 
 			if (padState & PAD_INPUT_DOWN) { // 下キーが押された瞬間だけ処理
@@ -156,9 +159,20 @@ SceneBase* SceneTitle::update()
 
 			if (m_fadeCount == 0)
 			{
-				// サウンドハンドルの削除
-				DeleteSoundMem(m_bgm1);
-				return(new SceneMain);
+				if (m_selectNum == 0)
+				{
+					// サウンドハンドルの削除
+					DeleteSoundMem(m_bgm1);
+					return(new SceneMain);
+
+				}
+				if (m_selectNum == 1)
+				{
+					// サウンドハンドルの削除
+					DeleteSoundMem(m_bgm1);
+					return(new SceneExplanation);
+
+				}
 			}
 			if (m_fadeOutFlag == false)
 			{
@@ -170,10 +184,12 @@ SceneBase* SceneTitle::update()
 					if (m_selectNum == 0)
 					{
 						m_fadeOutFlag = true;
-
+						m_count = 1;
 					}
 					if (m_selectNum == 1)
 					{
+						m_fadeOutFlag = true;
+						m_count = 1;
 					}
 					if (m_selectNum == 2)
 					{
@@ -236,4 +252,6 @@ void SceneTitle::draw()
 	// 読みこんだグラフィックを回転描画
 	DrawRotaGraph(550, m_CursorY, 0.8f, m_angle + DX_PI / 2 / 2, m_Cursor, TRUE);
 
+	// 文字列の描画
+	DrawString(10, 0, "十字キー、または十字ボタンの上下で移動　Zキー、または1ボタンで決定", 0xffffff);
 }

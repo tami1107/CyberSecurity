@@ -143,6 +143,7 @@
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="EnemyRevShot.cpp" />
     <ClCompile Include="EnemyShot.cpp" />
+    <ClCompile Include="SceneExplanation.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MobEnemies.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyRevShot.h" />
     <ClInclude Include="EnemyShot.h" />
+    <ClInclude Include="SceneExplanation.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="MobEnemies.h" />
     <ClInclude Include="Player.h" />

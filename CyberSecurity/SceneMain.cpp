@@ -689,7 +689,6 @@ SceneBase* SceneMain::update()
 
 				m_DefenseLine.setColorChange(m_DefenseLineCount);
 
-
 				if (m_DefenseLineCount == 1)
 				{
 					PlaySoundMem(m_DefenseLineSound2, DX_PLAYTYPE_BACK);

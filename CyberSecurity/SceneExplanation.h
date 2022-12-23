@@ -1,12 +1,12 @@
 #pragma once
 #include "SceneBase.h"
 
-class SceneTitle : public SceneBase
+class SceneExplanation : public SceneBase
 {
 public:
-	SceneTitle();
+	SceneExplanation();
 
-	virtual ~SceneTitle() {}
+	virtual ~SceneExplanation() {}
 
 
 	virtual void init() override;
@@ -18,16 +18,11 @@ public:
 	virtual bool isEnd() { return m_isEnd; }
 private:
 	int m_selectNum;
-	
+
 	int m_Interval;
 
-	int m_BackGround;
+	int m_BackGround[4];
 
-	int m_TitleLogo;
-
-	int m_Cursor;
-
-	int m_CursorY;
 
 	int m_fadeCount;
 
